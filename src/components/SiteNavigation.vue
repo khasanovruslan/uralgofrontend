@@ -4,7 +4,37 @@
       <nav class="m-8 space-x-8 lg:space-x-8 font-normal hidden xl:block tracking-2pct md:text-sm">
         <NavLink to="/" class="">главная</NavLink>
         <NavLink to="/destinations" class="">направления</NavLink>
-        <NavLink to="/createtrip" class="">поездки</NavLink>
+
+        <div class="relative group inline-block  ml-8">
+      <div
+        class="flex items-center cursor-pointer select-none"
+        @click="toggleMenu"
+      >
+        <NavLink class="font-normal tracking-2pct md:text-sm">поездки</NavLink>
+        <svg
+          class="ml-1 w-3 h-3 transform transition-transform duration-200"
+          :class="{ 'rotate-180': menuOpen }"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+        </svg>
+      </div>
+
+      <!-- Выпадающее меню -->
+      <div
+        v-if="menuOpen"
+        class="absolute flex flex-col mt-2 right-0 bg-white border border-gray-300 shadow-md rounded-md z-50 w-40 text-black text-sm"
+      >
+        <ul>
+          <li v-if="authStore.isAuthenticated" class="menu-item" @click="goTo('/createtrip')">создать</li>
+          <li class="menu-item" @click="goTo('/findtrip')">найти</li>
+          <li v-if="authStore.isAuthenticated" class="menu-item" @click="goTo('/account')">актуальные</li>
+        </ul>
+      </div>
+    </div>
+
+
       </nav>
     </div>
     <div class="flex-grow flex justify-start xl:justify-center items-center h-12">
@@ -30,6 +60,19 @@
 import { onMounted } from 'vue';
 import { useAuthStore } from '@/store/authStore';
 import NavLink from '@/components/buttons/NavLink.vue';
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+const router = useRouter()
+const menuOpen = ref(false)
+
+function toggleMenu() {
+  menuOpen.value = !menuOpen.value
+}
+
+function goTo(path) {
+  menuOpen.value = false
+  router.push(path)
+}
 
 const authStore = useAuthStore();
 
@@ -46,5 +89,21 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Оригинальные стили шапки сохранены */
+.menu-item {
+  padding: 10px 15px;
+  cursor: pointer;
+  text-align: left;
+  border-bottom: 1px solid black;
+  width: 100%;
+
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-item:hover {
+  background-color: #f0f0f0;
+}
+
 </style>
