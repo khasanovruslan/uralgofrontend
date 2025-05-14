@@ -199,6 +199,9 @@ module.exports = {
           'flex-direction': 'column',
           'justify-content': 'flex-end',
           'transition': 'transform 1s',
+          'background-position': 'center',
+          'background-repeat': 'no-repeat',
+          'background-size': 'cover',
         },
         
         '.bloki:hover': {
@@ -209,6 +212,9 @@ module.exports = {
           'height': '400px',
           'border-radius': '17px',
           'transition': 'transform 1s',
+          'background-position': 'center',
+          'background-repeat': 'no-repeat',
+          'background-size': 'cover',
         },
         
         '.bloki2:hover': {

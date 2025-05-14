@@ -5,6 +5,7 @@
       ОБЛОЖКА
     
     -->
+      <section class="h-[calc(100vh-48px)]">
 
     <div class="hidden xl:block">
       <p class="text-256px font-ProximaNova font-black text-stroke-1 text-stroke-black text-white -ml-10 -mt-20  ">
@@ -22,6 +23,7 @@
       <button class="bg-findTripRedirecting h-[35px] w-[175px] bg-no-repeat bg-contain xl:h-[70px] xl:w-[350px] xl:absolute xl:right-[140px] xl:top-[80px]" @click="findTripRedirecting">
       </button>
     </div>
+      </section>
 
     <!-- 
       

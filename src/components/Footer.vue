@@ -1,6 +1,6 @@
 <template>
     <!-- FOOTER COMPUTER -->
-    <div class="hidden xl:block w-full overflow-hidden h-[300px] bg-footer bg-no-repeat bg-contain non-draggable font-Montserrat text-white">
+    <div class="hidden xl:block w-full overflow-hidden h-[300px] bg-footer bg-no-repeat bg-cover bg-center non-draggable font-Montserrat text-white">
         <p class="text-[64px] font-black text-center">
             uralgo
         </p>

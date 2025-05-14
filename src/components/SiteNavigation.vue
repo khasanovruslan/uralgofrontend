@@ -1,5 +1,5 @@
 <template>
-  <header class="sticky top-0 h-12 xl:h-24 w-auto bg-headerImage xl:flex xl:items-center xl:justify-between px-4 lg:px-50 z-10">
+  <header class="sticky top-0 h-12 xl:h-24 w-auto bg-headerImage bg-no-repeat bg-cover bg-center xl:flex xl:items-center xl:justify-between px-4 lg:px-50 z-10">
     <div class="flex items-center absolute">
       <nav class="m-8 space-x-8 lg:space-x-8 font-normal hidden xl:block tracking-2pct md:text-sm">
         <NavLink to="/" class="">главная</NavLink>

@@ -1,7 +1,7 @@
 <template>
   <main>
     <!-- COMPUTER -->
-    <div class="hidden xl:flex flex-col h-[720px]">
+    <div class="hidden xl:flex flex-col">
       <p class="text-[48px] font-extrabold ml-[200px] mt-[50px]">Создать поездку</p>
       <div class="flex">
         <div class="border-t border-black w-[120px] mt-[35px]"></div>
@@ -41,12 +41,14 @@
           </div>
           <div class="w-[600px] flex justify-between">
             <p class="font-montserrat text-[20px] font-normal">Могут ли попутчики бронировать сразу?</p>
-            <label class="relative inline-block w-16 h-8">
-              <input v-model="trip.allowBooking" type="checkbox" class="opacity-0 w-0 h-0" @change="updateCheckbox">
-              <span :class="['slider', trip.allowBooking ? 'bg-green-500' : 'bg-gray-500']"></span>
-              <span :class="['slider-before', trip.allowBooking ? 'translate-x-full' : 'translate-x-0']"></span>
+            <label class="relative inline-block w-16 h-8 cursor-pointer">
+              <input v-model="trip.allowBooking" type="checkbox" class="opacity-0 w-0 h-0">
+              <span :class="['slider', 'round', trip.allowBooking ? 'bg-green-500' : 'bg-gray-500']"></span>
+              <span :class="['absolute h-7 w-7 bg-white rounded-full transition-transform top-[2px] left-[2px]', trip.allowBooking ? 'transform translate-x-[28px]' : 'transform translate-x-0']"></span>
             </label>
           </div>
+
+
           <div class="w-[600px] flex justify-between">
             <p class="font-montserrat text-[20px] font-normal">Цена поездки? (за одного попутчика)</p>
             <div class="flex items-center">
@@ -54,20 +56,34 @@
               <span class="font-montserrat text-[20px] ml-1">₽</span>
             </div>
           </div>
+          <div class="w-[600px] flex justify-between">
+            <label class="font-montserrat text-[20px] font-normal">Описание поездки:</label>
+            <textarea v-model="trip.description" rows="4" placeholder="Например: не курю, с собой домашние животные не разрешены и т.д."></textarea>
+          </div>
+          
           <div class="w-[600px] flex justify-end">
             <button type="submit" class="outline-none border-none bg-white w-[270px]">
               <img src="/images/createTripPageCreateTripBtn.svg" alt="">
             </button>
           </div>
+          
         </form>
         <div class="border-t border-black w-[700px] mt-[35px] ml-[10px]"></div>
       </div>
     </div>
-    <!-- PHONE -->
-    <div class="xl:hidden flex flex-col h-[720px]">
+
+
+
+    <!-- 
+    PHONE 
+    -->
+
+
+
+    <div class="xl:hidden flex flex-col items-center">
       <p class="text-[24px] font-extrabold ml-[50px] mt-[50px]">Создать поездку</p>
       <div class="border-t-[2px] border-black w-screen mt-[5px]"></div>
-        <form @submit.prevent="createTrip" class="w-[400px] mt-8flex flex-col justify-evenly">
+        <form @submit.prevent="createTrip" class="w-[400px] mt-8flex flex-col">
           <div class="flex">
             <img src="/images/createTripPageArrows.svg" alt="" class="mx-5 rotate-90 h-[28px] mt-[32px] ml-[10px]">
             <div class="flex flex-col mt-[10px]">
@@ -92,6 +108,7 @@
               <option value="2">2</option>
               <option value="3">3</option>
               <option value="4">4</option>
+              <option value="5">5</option>
             </select>
           </div>
           <div class="w-[400px] flex mt-[20px]">
@@ -105,10 +122,10 @@
           </div>
           <div class="w-[400px] flex">
             <p class="font-montserrat font-semibold text-[16px] ml-[20px]">Могут ли попутчики<br> бронировать сразу?</p>
-            <label class="relative inline-block w-16 h-8">
-              <input v-model="trip.allowBooking" type="checkbox" class="opacity-0 w-0 h-0" @change="updateCheckbox">
-              <span :class="['slider', trip.allowBooking ? 'bg-green-500' : 'bg-gray-500']"></span>
-              <span :class="['slider-before', trip.allowBooking ? 'translate-x-full' : 'translate-x-0']"></span>
+            <label class="relative inline-block w-16 h-8 cursor-pointer ml-4">
+              <input v-model="trip.allowBooking" type="checkbox" class="opacity-0 w-0 h-0">
+              <span :class="['slider', 'round', trip.allowBooking ? 'bg-green-500' : 'bg-gray-500']"></span>
+              <span :class="['absolute h-7 w-7 bg-white rounded-full transition-transform top-[2px] left-[2px]', trip.allowBooking ? 'transform translate-x-[28px]' : 'transform translate-x-0']"></span>
             </label>
           </div>
           <div class="w-[400px] flex justify-between">
@@ -128,69 +145,81 @@
   </main>
 </template>
 
-<script>
-import axios from 'axios';
+<script setup>
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
 
-export default {
-  name: "CreateTrip",
-  data() {
-    return {
-      trip: {
-        fromWhere: '',
-        toWhere: '',
-        createDate: '',
-        createTime: '',
-        availableSeats: 1,
-        initialPassengers: 1,
-        allowBooking: false,
-        pricePerPassenger: ''
-      },
-      minDate: this.getTodayDate(),
-      cities: [] // Массив для хранения загруженных городов
-    };
-  },
-  methods: {
-    async createTrip() {
-      // Проверяем, что выбранные города существуют в списке городов
-      if (!this.cities.includes(this.trip.fromWhere) || !this.cities.includes(this.trip.toWhere)) {
-        alert('В данном городе пока не совершаются поездки');
-        return; // Прерываем выполнение функции, если города не найдены
-      }
-      
-      try {
-        const response = await axios.post('http://localhost:3000/create-trip/create-trip', this.trip);
-        console.log('Trip created:', response.data);
-        alert('Поездка успешно создана');
-      } catch (error) {
-        console.error('Error creating trip:', error);
-        alert('Ошибка создания поездки');
-      }
-    },
+const cities = ref([])
 
-    updateCheckbox(event) {
-      this.trip.allowBooking = event.target.checked;
-    },
-    getTodayDate() {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    },
-    async loadCities() {
-      try {
-        const response = await axios.get('https://gist.githubusercontent.com/gorborukov/0722a93c35dfba96337b/raw/435b297ac6d90d13a68935e1ec7a69a225969e58/russia');
-        this.cities = response.data.map(city => city.city); // Преобразуем объекты JSON в массив строк с названиями городов
-      } catch (error) {
-        console.error('Error loading cities:', error);
-      }
-    }
-  },
-  mounted() {
-    this.loadCities(); // Загрузка списка городов при загрузке компонента
+const trip = ref({
+  fromWhere: '',
+  toWhere: '',
+  createDate: '',
+  createTime: '',
+  availableSeats: 1,
+  initialPassengers: 1,
+  allowBooking: false,
+  pricePerPassenger: '',
+  description: ''
+})
+
+const minDate = new Date().toISOString().split('T')[0]
+const minTime = new Date().toTimeString().split(' ')[0].slice(0, 5)
+
+async function loadCities() {
+  try {
+    const response = await axios.get(
+      'https://gist.githubusercontent.com/gorborukov/0722a93c35dfba96337b/raw/435b297ac6d90d13a68935e1ec7a69a225969e58/russia'
+    )
+    cities.value = response.data.map(city => city.city)
+  } catch (error) {
+    console.error('Ошибка загрузки городов:', error)
   }
-};
+}
+
+async function createTrip() {
+  if (
+    !cities.value.includes(trip.value.fromWhere) ||
+    !cities.value.includes(trip.value.toWhere)
+  ) {
+    alert('В данном городе пока не совершаются поездки')
+    return
+  }
+
+  try {
+    const departureDateTime = new Date(`${trip.value.createDate}T${trip.value.createTime}`)
+    const payload = {
+      origin: trip.value.fromWhere,
+      destination: trip.value.toWhere,
+      departure_time: departureDateTime.toISOString(),
+      seats: +trip.value.availableSeats,
+      available_seats: +trip.value.availableSeats,
+      initial_passengers: +trip.value.initialPassengers,
+      allow_booking: trip.value.allowBooking,
+      price: +trip.value.pricePerPassenger,
+      description: trip.value.description
+    }
+
+    const response = await axios.post(`${import.meta.env.VITE_API_URL}/trips`, payload, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}` // если токен хранится в localStorage
+      }
+    })
+
+    alert('Поездка успешно создана')
+    console.log('Создана поездка:', response.data)
+  } catch (error) {
+    console.error('Ошибка при создании поездки:', error)
+    alert('Ошибка создания поездки')
+  }
+}
+
+onMounted(() => {
+  loadCities()
+})
 </script>
+
+
 
 <style scoped>
 img {

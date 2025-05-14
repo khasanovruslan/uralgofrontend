@@ -12,9 +12,7 @@
           <p class="registerText">Пароль</p>
           <input v-model="form.password" type="password" class="h-[46px] w-[424px] rounded-[6px] mt-2 pl-4" placeholder="Введите пароль">
         </div>
-        <button type="submit" class="w-[424px] h-[48px] mt-20 bg-LoginPageLoginButton">
-          Войти
-        </button>
+        <AuthButton class="mt-20" @click="loginUser" />
         <div class="flex mt-[190px] text-white">
           <p>Еще нет аккаунта?</p>
           <button class="font-bold ml-1" @click="redirectToRegister">Регистрация</button>
@@ -31,6 +29,7 @@
 import { reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/authStore';
+import AuthButton from '@/components/buttons/AuthButton.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
