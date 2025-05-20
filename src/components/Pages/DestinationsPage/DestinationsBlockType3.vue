@@ -1,6 +1,6 @@
 <template>
-    <div class="DestinationsBlockType3 flex-1 flex flex-col items-start">
-      <button
+    <div class="DestinationsBlockType3 flex flex-col mt-20 items-start">
+      <buttуon
         class="bloki3 drop-shadow-lg -mt-[55px] w-full h-48 bg-cover bg-center"
         :style="{ backgroundImage: `url(${img})` }"
       />

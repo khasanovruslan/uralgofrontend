@@ -21,7 +21,7 @@
           <input v-model="form.password" type="password" class="h-[46px] w-[424px] rounded-[6px] mt-2 pl-4" placeholder="Введите пароль">
         </div>
         <button type="submit" class="w-[424px] h-[48px] mt-8 bg-RegisterPageRegisterButton">
-          Зарегистрироваться
+          
         </button>
         <div class="flex text-white mt-16">
           <p>Уже есть аккаунт?</p>
