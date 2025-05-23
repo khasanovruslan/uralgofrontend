@@ -282,11 +282,11 @@ export default {
     const router = useRouter()
 
     const createTripRedirecting = () => {
-      router.push('/createtrip')
+      router.push('/create-trip')
     }
 
     const findTripRedirecting = () => {
-      router.push('/findtrip')
+      router.push('/find-trip')
     }
 
     const destinationsRedirecting = () => {

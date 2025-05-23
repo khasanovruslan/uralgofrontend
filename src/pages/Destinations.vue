@@ -65,7 +65,7 @@
     },
     setup() {
       const router = useRouter()
-      const createTripRedirecting = () => router.push('/createtrip')
+      const createTripRedirecting = () => router.push('/create-trip')
   
       // Данные для блоков
       const permkrai = [

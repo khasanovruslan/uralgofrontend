@@ -43,6 +43,7 @@ module.exports = {
         'registerBG': "url('/регистрация.svg')",
         'LoginPageLoginButton': "url('/images/LoginPageLoginButton.svg')",
         'RegisterPageRegisterButton': "url('/images/RegPageRegButton.svg')",
+        'InputIcon': "url('/images/icons/inputIcon.png')",
 
       },
       letterSpacing: {
@@ -68,8 +69,12 @@ module.exports = {
       },
     },
     screens: {
-      "xl": '1280px',
-    },
+      'sm': '640px',
+      'md': '768px',
+      'lg': '1024px',
+      'xl': '1280px',
+      '2xl': '1536px'
+    }
   },
 
   plugins: [
