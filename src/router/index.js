@@ -43,7 +43,7 @@ const routes = [
     path: '/create-trip',
     name: 'create-trip',
     component: CreateTrip,
-    meta: { requiresAuth: true, title: 'Создать поездку' }
+    meta: { requiresAuth: true, requiresDriver: true, title: 'Создать поездку' }
   },
   {
     path: '/find-trip',
@@ -108,6 +108,14 @@ router.beforeEach((to, from, next) => {
   // Защита от входа зарегистрированных на страницы входа/регистрации
   if ((to.name === 'login' || to.name === 'register') && authStore.isAuthenticated) {
     return next({ name: 'home' })
+  }
+
+  if (to.meta.requiresDriver) {
+    const roles = authStore.user?.roles?.map(r => r.name) || [];
+    if (!roles.includes('Driver')) {
+      // Можно заменить на redirect куда угодно
+      return next({ name: 'home' });
+    }
   }
 
   next()

@@ -9,7 +9,7 @@
     <form @submit.prevent="submitForm" class="account-form flex flex-col gap-y-8 mt-[50px] md:flex">
       <!-- Имя -->
       <AccountInput 
-        v-model="form.firstName" 
+        v-model="form.name" 
         label="Имя" 
         :required="true"
       />
@@ -48,153 +48,135 @@
         :required="true"
       />
 
-      <!-- Чекбокс, определяющий роль (водитель или попутчик) -->
-      <div class="checkbox-wrapper">
-        <label>
-          <input type="checkbox" v-model="isDriver" />
-          Я водитель
+      <!-- Выбор ролей -->
+      <div class="roles-section flex flex-wrap gap-4">
+        <label class="flex items-center">
+          <input type="checkbox" v-model="form.roles" value="Driver" class="mr-2"/> Я водитель
+        </label>
+        <label class="flex items-center">
+          <input type="checkbox" v-model="form.roles" value="Guide" class="mr-2"/> Гид
+        </label>
+        <label class="flex items-center">
+          <input type="checkbox" v-model="form.roles" value="Organizer" class="mr-2"/> Организатор туров
         </label>
       </div>
 
-      <!-- Если пользователь водитель, показываем поле для водительских прав -->
-      <AccountInput 
-        v-if="isDriver" 
-        v-model="form.driverLicense" 
-        label="Водительские права" 
+      <!-- Поле водительских прав, если роль Driver -->
+      <AccountInput
+        v-if="form.roles.includes('Driver')"
+        v-model="form.driverLicense"
+        label="Водительские права"
         placeholder="Номер водительских прав"
-        :required="isDriver"
+        :required="form.roles.includes('Driver')"
       />
 
-      <!-- Пароль -->
-      <AccountInput 
-        v-model="form.password" 
-        label="Пароль" 
-        type="password" 
-        :required="true"
-      />
+      <!-- Загрузка фото -->
+      <div class="photo-section flex flex-col">
+        <label>Аватар:</label>
+        <input type="file" @change="onFileChange" accept="image/*" class="mt-2" />
+        <img v-if="previewUrl" :src="previewUrl" class="preview-img mt-4" />
+      </div>
 
-      <button type="submit">Сохранить</button>
+      <button type="submit" class="mt-4 bg-blue-500 text-white py-2 rounded-lg">Сохранить</button>
     </form>
-    <button @click="logout">Выйти</button>
+    <button @click="logout" class="mt-6 text-red-500">Выйти</button>
   </div>
 </template>
 
 <script setup>
-import { computed, reactive, ref, onMounted, watch } from 'vue';
+import { reactive, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/authStore';
-import axios from 'axios'; // Подключаем axios для HTTP-запросов
+import axios from 'axios';
 import AccountInput from '@/components/inputs/AccountInput.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
-const userName = computed(() => authStore.userName);
-
-// Флаг для определения, является ли пользователь водителем
-const isDriver = ref(false);
-
-// Структура формы аккаунта
+// Форма профиля
 const form = reactive({
-  firstName: '',
+  name: '',
   city: '',
   email: '',
   phone: '',
   birthDate: '',
   passport: '',
   driverLicense: '',
-  password: ''
+  roles: ['Passenger'] 
 });
 
-// Загружаем профиль при монтировании страницы
-onMounted(async () => {
-  if (authStore.isAuthenticated && !authStore.user) {
-    try {
-      await authStore.fetchProfile();
-    } catch (error) {
-      console.error("Ошибка при получении профиля:", error);
-      authStore.logout();
-    }
-  } else if (!authStore.isAuthenticated) {
-    router.push('/login');
-  }
+const photoFile = ref(null);
+const previewUrl = ref('');
 
-  // **Автозаполнение формы данными пользователя**
-  if (authStore.user) {
-    form.firstName = authStore.user.name || '';
-    form.email = authStore.user.email || '';
-    form.phone = authStore.user.phone || '';
-    form.city = authStore.user.city || '';
-    form.birthDate = authStore.user.birthDate || '';
-    form.passport = authStore.user.passport || '';
-    form.driverLicense = authStore.user.driverLicense || '';
-    isDriver.value = authStore.user.isDriver || false;
-  }
-});
+// Обработчик выбора файла
+function onFileChange(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  photoFile.value = file;
+  previewUrl.value = URL.createObjectURL(file);
+}
 
-// Обновляем форму, если данные `authStore.user` изменятся после загрузки
-watch(() => authStore.user, (newUser) => {
-  if (newUser) {
-    form.firstName = newUser.name || '';
-    form.email = newUser.email || '';
-    form.phone = newUser.phone || '';
-    form.city = newUser.city || '';
-    form.birthDate = newUser.birthDate || '';
-    form.passport = newUser.passport || '';
-    form.driverLicense = newUser.driverLicense || '';
-    isDriver.value = newUser.isDriver || false;
-  }
-}, { immediate: true });
-
-const logout = () => {
-  authStore.logout();
-};
-
-// Валидация email
-const emailValidator = (value) => {
+function emailValidator(value) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(value)) {
-    return 'Неверный формат email.';
-  }
-  return '';
-};
+  return emailRegex.test(value) ? '' : 'Неверный формат email.';
+}
 
-// **Функция обновления профиля пользователя**
-const submitForm = async () => {
+async function submitForm() {
   try {
-    // собираем «сырые» данные
-    const raw = {
-      name:        form.firstName,
-      city:        form.city,
-      email:       form.email,
-      phone:       form.phone,
-      birthDate:   form.birthDate,
-      passport:    form.passport,
-      isDriver:    isDriver.value,
-      driverLicense: form.driverLicense,
-      // пароль не трогаем, если у пользователя нет поля для его смены
-    };
-
-    // удаляем пустые поля
-    const payload = {};
-    Object.entries(raw).forEach(([k, v]) => {
-      if (v !== '' && v != null) payload[k] = v;
+    const formData = new FormData();
+    Object.entries(form).forEach(([key, val]) => {
+      if (Array.isArray(val)) {
+        formData.append(key, JSON.stringify(val));
+      } else if (val) {
+        formData.append(key, val);
+      }
     });
-
-    console.log("Отправка данных аккаунта:", payload);
+    if (photoFile.value) formData.append('photo', photoFile.value);
 
     const { data } = await axios.put(
       'http://localhost:3000/api/user',
-      payload,
-      { headers: { Authorization: `Bearer ${authStore.token}` } }
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${authStore.token}`
+        }
+      }
     );
-    console.log("Ответ сервера:", data);
-    alert("Данные успешно обновлены!");
+    alert('Профиль успешно обновлён');
+    authStore.setUser(data);
   } catch (err) {
-    console.error("Ошибка при обновлении профиля:", err.response?.data || err);
-    alert("Ошибка при обновлении данных.");
+    console.error(err);
+    alert(err.response?.data?.message || 'Ошибка при обновлении профиля');
   }
-};
+}
 
+function logout() {
+  authStore.logout();
+  router.push('/login');
+}
+
+  // ручной маппинг camelCase → snake_case
+
+
+onMounted(async () => {
+  if (!authStore.user) await authStore.fetchProfile();
+  const u = authStore.user;
+  form.name = u.name || '';
+  form.city = u.city || '';
+  form.email = u.email || '';
+  form.phone = u.phone || '';
+  form.birthDate = u.birthDate || '';
+  form.passport = u.passport || '';
+  form.driverLicense = u.driverLicense || '';
+  form.roles = u.roles?.map(r => r.name) || [];
+  if (u.photoUrl) previewUrl.value = u.photoUrl;
+});
 </script>
 
+<style scoped>
+.preview-img {
+  max-width: 120px;
+  border-radius: 50%;
+}
+</style>
