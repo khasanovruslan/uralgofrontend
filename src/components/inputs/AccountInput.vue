@@ -6,7 +6,7 @@
         {{ label }}
       </label>
       <input
-        class="w-[336px] h-[48px] border-black border-[1px] rounded-[55px] pl-[20px] pr-[20px] text-[16px] font-[600]"
+        class="w-[360px] h-[48px] border-black border-[1px] rounded-[55px] pl-[20px] pr-[20px] text-[16px] font-[600]"
         :type="type"
         :placeholder="placeholder"
         v-model="localValue"

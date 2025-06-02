@@ -1,9 +1,9 @@
 <template>
     <button
       :type="type"
-      class="w-[424px] h-[48px] bg-black"
+      class="w-[424px] h-[48px] bg-black text-white rounded-[90px]"
       @click="handleClick"
-    >
+    > 
     <slot>Кнопка</slot>
     </button>
   </template>

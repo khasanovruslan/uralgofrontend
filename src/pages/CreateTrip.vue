@@ -19,7 +19,7 @@
           </div>
           <div class="w-[600px] flex items-center">
             <input v-model="trip.createDate" :min="minDate" class="font-montserrat text-[20px] text-[#606060] outline-none border-b border-black w-[200px] text-start" type="date"/>
-            <input v-model="trip.createTime" :min="minTime" class="ml-[78px] font-montserrat text-[20px] text-[#606060] outline-none border-b border-black w-[200px] text-start" type="time"/>
+            <input v-model="trip.createTime" :min="timeMin" class="ml-[78px] font-montserrat text-[20px] text-[#606060] outline-none border-b border-black w-[200px] text-start" type="time"/>
           </div>
           <div class="w-[600px] flex justify-between">
             <p class="font-montserrat text-[20px] font-normal">Сколько свободных мест в автомобиле?</p>
@@ -99,7 +99,7 @@
           </div>
           <div class="w-[400px] ml-[30px]">
             <input v-model="trip.createDate" :min="minDate" class="font-montserrat font-semibold text-[20px] text-[#606060] outline-none border-b border-black w-[328px] text-start" type="date"/>
-            <input v-model="trip.createTime" :min="minTime" class="font-montserrat font-semibold text-[20px] text-[#606060] outline-none border-b border-black w-[328px] text-start mt-[10px]" type="time"/>
+            <input v-model="trip.createTime" :min="timeMin" class="font-montserrat font-semibold text-[20px] text-[#606060] outline-none border-b border-black w-[328px] text-start mt-[10px]" type="time"/>
           </div>
           <div class="w-[400px] flex mt-[30px]">
             <p class="font-montserrat font-semibold text-[16px] ml-[20px]">Сколько свободных мест<br> в автомобиле?</p>
@@ -146,7 +146,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+//pages/CreateTrip.vue
+import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 
 const cities = ref([])
@@ -166,6 +167,15 @@ const trip = ref({
 const minDate = new Date().toISOString().split('T')[0]
 const minTime = new Date().toTimeString().split(' ')[0].slice(0, 5)
 
+
+// Новое: динамический минимум для time-input
+const timeMin = computed(() => {
+  // если выбранная дата — сегодня, то current time, иначе — начало суток
+  return trip.value.createDate === minDate
+    ? minTime
+    : '00:00'
+})
+
 async function loadCities() {
   try {
     const response = await axios.get(
@@ -177,6 +187,7 @@ async function loadCities() {
   }
 }
 
+
 async function createTrip() {
   if (
     !cities.value.includes(trip.value.fromWhere) ||
@@ -186,12 +197,19 @@ async function createTrip() {
     return
   }
 
+  const now = new Date()
+  const selectedDateTime = new Date(`${trip.value.createDate}T${trip.value.createTime}`)
+
+  if (selectedDateTime <= now) {
+    alert('Время отправления должно быть позже текущего момента')
+    return
+  }
+
   try {
-    const departureDateTime = new Date(`${trip.value.createDate}T${trip.value.createTime}`)
     const payload = {
       origin: trip.value.fromWhere,
       destination: trip.value.toWhere,
-      departure_time: departureDateTime.toISOString(),
+      departure_time: selectedDateTime.toISOString(), // это UTC, сервер должен быть готов
       seats: +trip.value.availableSeats,
       available_seats: +trip.value.availableSeats,
       initial_passengers: +trip.value.initialPassengers,
@@ -202,9 +220,10 @@ async function createTrip() {
 
     const response = await axios.post(`${import.meta.env.VITE_API_URL}/trips`, payload, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}` // если токен хранится в localStorage
+        Authorization: `Bearer ${localStorage.getItem('token')}`
       }
     })
+
 
     alert('Поездка успешно создана')
     console.log('Создана поездка:', response.data)
@@ -213,6 +232,7 @@ async function createTrip() {
     alert('Ошибка создания поездки')
   }
 }
+
 
 onMounted(() => {
   loadCities()

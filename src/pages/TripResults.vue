@@ -102,6 +102,15 @@
     <!-- РЕЗУЛЬТАТЫ -->
     <div class="trip-results mt-10 space-y-4">
       <TripBlock v-for="t in trips" :key="t.id" :trip="t" />
+       
+    
+    <MapLibreRoute :start="[55.76,37.62]" :end="[59.93,30.34]" />
+
+
+
+
+
+
       <p v-if="trips.length === 0" class="text-center text-gray-500">
         Поездок не найдено
       </p>
@@ -115,6 +124,8 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import TripBlock from '@/components/TripBlock.vue'
+import MapSimple from '@/components/MapSimple.vue'
+import MapLibreRoute from '@/components/MapLibreRoute.vue'
 
 const router = useRouter()
 const route = useRoute()

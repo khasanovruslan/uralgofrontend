@@ -6,7 +6,7 @@
       <hr class="w-[35%] border-t-2 border-black">
     </div>
 
-    <form @submit.prevent="submitForm" class="account-form flex flex-col gap-y-8 mt-[50px] md:flex">
+    <form @submit.prevent="submitForm" class="account-form max-w-[360px] flex flex-col gap-y-8 mt-[50px] md:flex">
       <!-- Имя -->
       <AccountInput 
         v-model="form.name" 
@@ -49,7 +49,7 @@
       />
 
       <!-- Выбор ролей -->
-      <div class="roles-section flex flex-wrap gap-4">
+      <div class="roles-section flex flex-col gap-4">
         <label class="flex items-center">
           <input type="checkbox" v-model="form.roles" value="Driver" class="mr-2"/> Я водитель
         </label>

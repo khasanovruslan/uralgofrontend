@@ -145,10 +145,10 @@ function onFind() {
     alert('Заполните все поля поиска')
     return
   }
-  if (new Date(date.value) < new Date()) {
-    alert('Выберите будущую дату')
-    return
-  }
+  if (new Date(date.value).setHours(0,0,0,0) < new Date().setHours(0,0,0,0)) {
+  alert('Выберите будущую дату')
+  return
+}
   router.push({
     path: '/results',
     query: { from: from.value, to: to.value, date: date.value, pax: passengers.value }

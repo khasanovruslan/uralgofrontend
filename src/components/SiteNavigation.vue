@@ -11,7 +11,7 @@
         class="flex items-center cursor-pointer select-none"
         @click="toggleMenu"
       >
-        <NavLink class="font-normal tracking-2pct md:text-sm">поездки</NavLink>
+        <span class="font-normal tracking-2pct md:text-sm">поездки</span>
         <svg
           class="ml-1 w-3 h-3 transform transition-transform duration-200"
           :class="{ 'rotate-180': menuOpen }"
