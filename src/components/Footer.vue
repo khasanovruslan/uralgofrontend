@@ -15,7 +15,7 @@
             </div>
             <div class="absolute">
                 <p class="text-white font-bold">
-                    ПГГПУ 2023
+                    ПГГПУ 2025
                 </p>
             </div>
             <div>
@@ -42,7 +42,7 @@
             </div>
             <div class="">
                 <p class="text-white font-bold">
-                    2023 ПГГПУ
+                    2025 ПГГПУ
                 </p>
             </div>
         </div>

@@ -91,7 +91,7 @@
         </AuthButton>
 
         <!-- Ссылка на Вход -->
-        <div class="flex mt-16">
+        <div class="flex mt-8">
           <p class="text-white">Уже есть аккаунт?</p>
           <button
             type="button"

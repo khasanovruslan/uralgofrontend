@@ -1,5 +1,5 @@
 <template>
-  <div class="account-page flex flex-col pt-[5%] items-center">  
+  <div class="account-page flex flex-col pt-[5%] items-center">
     <div class="flex w-full justify-between items-center">
       <hr class="w-[35%] border-t-2 border-black">
       <h1 class="text-[36px] text-center font-bold px-4">Личный кабинет</h1>
@@ -32,12 +32,20 @@
         :required="true"
       />
 
+      <!-- Телефон -->
+      <AccountInput 
+        v-model="form.phone" 
+        label="Телефон" 
+        placeholder="+7XXXXXXXXXX"
+        :required="true"
+      />
+
       <!-- Дата Рождения -->
       <AccountInput 
         v-model="form.birthDate" 
         label="Дата Рождения" 
         type="date" 
-        :required="true"
+        :required="false"
       />
 
       <!-- Паспорт -->
@@ -45,7 +53,7 @@
         v-model="form.passport" 
         label="Серия и номер паспорта" 
         placeholder="XXXX XXXXXX"
-        :required="true"
+        :required="false"
       />
 
       <!-- Выбор ролей -->
@@ -93,7 +101,7 @@ import AccountInput from '@/components/inputs/AccountInput.vue';
 const router = useRouter();
 const authStore = useAuthStore();
 
-// Форма профиля
+// Форма профиля в camelCase
 const form = reactive({
   name: '',
   city: '',
@@ -102,7 +110,7 @@ const form = reactive({
   birthDate: '',
   passport: '',
   driverLicense: '',
-  roles: ['Passenger'] 
+  roles: [] 
 });
 
 const photoFile = ref(null);
@@ -124,14 +132,21 @@ function emailValidator(value) {
 async function submitForm() {
   try {
     const formData = new FormData();
-    Object.entries(form).forEach(([key, val]) => {
-      if (Array.isArray(val)) {
-        formData.append(key, JSON.stringify(val));
-      } else if (val) {
-        formData.append(key, val);
-      }
-    });
-    if (photoFile.value) formData.append('photo', photoFile.value);
+
+    // Явно добавляем только непустые поля
+    if (form.name)         formData.append('name', form.name);
+    if (form.city)         formData.append('city', form.city);
+    if (form.email)        formData.append('email', form.email);
+    if (form.phone)        formData.append('phone', form.phone);
+    if (form.birthDate)    formData.append('birthDate', form.birthDate);
+    if (form.passport)     formData.append('passport', form.passport);
+    if (form.driverLicense) formData.append('driverLicense', form.driverLicense);
+
+    formData.append('roles', JSON.stringify(form.roles));
+
+    if (photoFile.value) {
+      formData.append('photo', photoFile.value);
+    }
 
     const { data } = await axios.put(
       'http://localhost:3000/api/user',
@@ -144,7 +159,8 @@ async function submitForm() {
       }
     );
     alert('Профиль успешно обновлён');
-    authStore.setUser(data);
+    authStore.user = data
+  return; // прекращаем выполнение, чтобы не попасть в catch
   } catch (err) {
     console.error(err);
     alert(err.response?.data?.message || 'Ошибка при обновлении профиля');
@@ -156,21 +172,21 @@ function logout() {
   router.push('/login');
 }
 
-  // ручной маппинг camelCase → snake_case
-
-
 onMounted(async () => {
-  if (!authStore.user) await authStore.fetchProfile();
+  if (!authStore.user) {
+    await authStore.fetchProfile();
+  }
   const u = authStore.user;
-  form.name = u.name || '';
-  form.city = u.city || '';
-  form.email = u.email || '';
-  form.phone = u.phone || '';
-  form.birthDate = u.birthDate || '';
-  form.passport = u.passport || '';
-  form.driverLicense = u.driverLicense || '';
-  form.roles = u.roles?.map(r => r.name) || [];
-  if (u.photoUrl) previewUrl.value = u.photoUrl;
+  // Маппим snake_case → camelCase
+  form.name           = u.name || '';
+  form.city           = u.city || '';
+  form.email          = u.email || '';
+  form.phone          = u.phone || '';
+  form.birthDate      = u.birth_date || '';
+  form.passport       = u.passport || '';
+  form.driverLicense  = u.driver_license || '';
+  form.roles          = u.roles?.map(r => r.name) || [];
+  if (u.photo_url) previewUrl.value = u.photo_url;
 });
 </script>
 

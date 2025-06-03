@@ -55,7 +55,7 @@
         </AuthButton>
 
         <!-- ССЫЛКА НА РЕГИСТРАЦИЮ -->
-        <div class="flex mt-[190px] text-white">
+        <div class="flex mt-8 text-white">
           <p>Еще нет аккаунта?</p>
           <button 
             type="button" 

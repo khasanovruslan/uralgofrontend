@@ -1,5 +1,5 @@
 <template>
-  <main>
+  <main class="overflow-hidden" >
     <!-- 
       
       ОБЛОЖКА
@@ -200,7 +200,7 @@
             </p>
             <p class="text-[128px] font-normal text-stroke-1 text-stroke-black text-white ">2</p>
           </div>
-          <button class="-mr-[60px] bg-createTripButtonMobile bg-no-repeat bg-contain h-[48px] w-[260px]" @click="createTripRedirecting">
+          <button class="bg-createTripButtonMobile -translate-x-[-60px] bg-no-repeat bg-contain h-[48px] w-[260px]" @click="createTripRedirecting">
       </button>
         </div>
         <!-- 3 ВОЗМОЖНОСТЬ ТЕЛЕФОН -->
