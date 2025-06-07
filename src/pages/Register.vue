@@ -6,13 +6,12 @@
     class="w-screen h-screen xl:block hidden font-Montserrat bg-cover bg-center"
     style="background-image: url(/images/регистрация.svg);"
   >
-      <!-- Полупрозрачный оверлей -->
-      <div class="absolute top-0 right-0 w-1/2 h-full bg-white/10 backdrop-blur-[10px] z-10">
-      <form @submit.prevent="registerUser" class="flex flex-col ml-[50px] mt-[180px] z-20"
-      >
+    <!-- Полупрозрачный оверлей -->
+    <div class="absolute top-0 right-0 w-1/2 h-full bg-white/10 backdrop-blur-[10px] z-10">
+      <form @submit.prevent="registerUser" class="flex flex-col ml-[50px] mt-[180px] z-20">
         <!-- Заголовок -->
-        <p class="font-medium text-[24px] leading-[136%] ">Создайте учетную запись</p>
-        <p class="mt-[5px] leading-[136%] text-[14px] ">Просто и бесплатно</p>
+        <p class="font-medium text-[24px] leading-[136%]">Создайте учетную запись</p>
+        <p class="mt-[5px] leading-[136%] text-[14px]">Просто и бесплатно</p>
 
         <!-- ИМЯ -->
         <div class="flex flex-col mt-[70px]">
@@ -48,9 +47,7 @@
 
         <!-- НОМЕР ТЕЛЕФОНА -->
         <div class="flex flex-col mt-3">
-          <label for="phone-desktop" class="registerText text-white">
-            Номер телефона
-          </label>
+          <label for="phone-desktop" class="registerText text-white">Номер телефона</label>
           <input
             id="phone-desktop"
             v-model="form.phone"
@@ -80,12 +77,13 @@
           </p>
         </div>
 
+        <!-- Ошибка от сервера или общая -->
+        <p v-if="serverError" class="text-red-500 text-sm mt-4">
+          {{ serverError }}
+        </p>
+
         <!-- КНОПКА РЕГИСТРАЦИИ -->
-        <AuthButton
-          type="submit"
-          :disabled="isLoading"
-          class="mt-8 w-[424px] h-[48px]"
-        >
+        <AuthButton type="submit" :disabled="isLoading" class="mt-8 w-[424px] h-[48px]">
           <span v-if="isLoading">Регистрация...</span>
           <span v-else>Зарегистрироваться</span>
         </AuthButton>
@@ -93,29 +91,21 @@
         <!-- Ссылка на Вход -->
         <div class="flex mt-8">
           <p class="text-white">Уже есть аккаунт?</p>
-          <button
-            type="button"
-            class="font-bold ml-1 text-white"
-            @click="redirectToLogin"
-          >
+          <button type="button" class="font-bold ml-1 text-white" @click="redirectToLogin">
             Вход
           </button>
-          
         </div>
-        
       </form>
-      </div>
+    </div>
 
-      <!-- КНОПКА «uralgo» для возврата на главную -->
-      <button
-        type="button"
-        class="font-black m-6 text-[36px] absolute top-0 left-0 text-white z-20"
-        @click="goBackHome"
-      >
-        uralgo
-      </button>
-
-      
+    <!-- КНОПКА «uralgo» для возврата на главную -->
+    <button
+      type="button"
+      class="font-black m-6 text-[36px] absolute top-0 left-0 text-white z-20"
+      @click="goBackHome"
+    >
+      uralgo
+    </button>
   </div>
 
   <!-- =========================== МОБИЛЬНАЯ (XS–LG) =========================== -->
@@ -137,18 +127,14 @@
         <p class="font-medium text-[20px] leading-[136%] text-gray-900">
           Создайте учетную запись
         </p>
-        <p class="mt-1 text-[12px] leading-[136%] text-gray-600">
-          Просто и бесплатно
-        </p>
+        <p class="mt-1 text-[12px] leading-[136%] text-gray-600">Просто и бесплатно</p>
       </div>
 
       <!-- Форма -->
       <form @submit.prevent="registerUser" class="flex flex-col space-y-4">
         <!-- ИМЯ -->
         <div class="flex flex-col">
-          <label for="name-mobile" class="text-sm font-medium text-gray-700">
-            Имя
-          </label>
+          <label for="name-mobile" class="text-sm font-medium text-gray-700">Имя</label>
           <input
             id="name-mobile"
             v-model="form.name"
@@ -164,9 +150,7 @@
 
         <!-- EMAIL -->
         <div class="flex flex-col">
-          <label for="email-mobile" class="text-sm font-medium text-gray-700">
-            Email
-          </label>
+          <label for="email-mobile" class="text-sm font-medium text-gray-700">Email</label>
           <input
             id="email-mobile"
             v-model="form.email"
@@ -182,9 +166,7 @@
 
         <!-- НОМЕР ТЕЛЕФОНА -->
         <div class="flex flex-col">
-          <label for="phone-mobile" class="text-sm font-medium text-gray-700">
-            Номер телефона
-          </label>
+          <label for="phone-mobile" class="text-sm font-medium text-gray-700">Номер телефона</label>
           <input
             id="phone-mobile"
             v-model="form.phone"
@@ -200,9 +182,7 @@
 
         <!-- ПАРОЛЬ -->
         <div class="flex flex-col">
-          <label for="password-mobile" class="text-sm font-medium text-gray-700">
-            Пароль
-          </label>
+          <label for="password-mobile" class="text-sm font-medium text-gray-700">Пароль</label>
           <input
             id="password-mobile"
             v-model="form.password"
@@ -211,20 +191,18 @@
             class="h-[40px] w-full rounded-md mt-1 pl-3 border border-gray-300"
             placeholder="Введите пароль"
           />
-          <p
-            v-if="errorMessage && form.password.length < 6"
-            class="text-red-500 text-xs mt-1"
-          >
+          <p v-if="errorMessage && form.password.length < 6" class="text-red-500 text-xs mt-1">
             Пароль должен быть не менее 6 символов
           </p>
         </div>
 
+        <!-- Ошибка от сервера или общая -->
+        <p v-if="serverError" class="text-red-500 text-xs mt-2">
+          {{ serverError }}
+        </p>
+
         <!-- КНОПКА РЕГИСТРАЦИИ -->
-        <AuthButton
-          type="submit"
-          :disabled="isLoading"
-          class="mt-4 w-full h-[44px]"
-        >
+        <AuthButton type="submit" :disabled="isLoading" class="mt-4 w-full h-[44px]">
           <span v-if="isLoading">Регистрация...</span>
           <span v-else>Зарегистрироваться</span>
         </AuthButton>
@@ -254,32 +232,36 @@ import AuthButton from '@/components/buttons/AuthButton.vue';
 const router = useRouter();
 const authStore = useAuthStore();
 
+// Сбор полей формы
 const form = reactive({
   name: '',
   email: '',
   phone: '',
-  password: ''
+  password: '',
 });
 
 const isLoading = ref(false);
-const errorMessage = ref('');
+const errorMessage = ref(''); // для валидации полей
+const serverError = ref(''); // для ошибок от сервера
 
-// Функция регистрации
 async function registerUser() {
-  // Базовая валидация полей
+  // 1) Базовая валидация на пустые поля и длину пароля
   if (!form.name || !form.email || !form.phone || form.password.length < 6) {
     errorMessage.value = 'Пожалуйста, заполните все поля корректно';
     return;
   }
 
-  isLoading.value = true;
+  // Очищаем предыдущие ошибки
+  serverError.value = '';
   errorMessage.value = '';
+  isLoading.value = true;
 
   try {
+    // Вызывать Pinia-метод, он сделает запрос к бэку и автоперенаправление
     await authStore.register(form);
-    // Обычно store сам делает router.push('/login')
   } catch (err) {
-    errorMessage.value = err.response?.data?.message || 'Ошибка регистрации';
+    // Если бэк вернул ошибку, покажем её
+    serverError.value = err.response?.data?.message || 'Ошибка регистрации';
   } finally {
     isLoading.value = false;
   }
@@ -295,10 +277,9 @@ function goBackHome() {
 </script>
 
 <style lang="scss" scoped>
-/* Ваши SCSS-правила, которые были в оригинальном файле */
 .registerText {
   font-size: 14px;
   font-weight: 500;
 }
-/* Другие стили без изменений */
+/* Остальные стили без изменений */
 </style>

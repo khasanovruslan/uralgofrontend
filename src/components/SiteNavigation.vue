@@ -28,7 +28,7 @@
         class="absolute flex flex-col mt-2 right-0 bg-white border border-gray-300 shadow-md rounded-md z-50 w-40 text-black text-sm"
       >
         <ul>
-          <li v-if="authStore.isAuthenticated && authStore.user.roles.some(r => r.name === 'Driver')" class="menu-item" @click="goTo('/create-trip')">
+          <li v-if="authStore.isAuthenticated && authStore.user?.roles?.some(r => r.name === 'Driver')" class="menu-item" @click="goTo('/create-trip')">
             создать
           </li>
           <li class="menu-item" @click="goTo('/find-trip')">найти</li>

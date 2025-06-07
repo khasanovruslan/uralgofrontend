@@ -28,7 +28,7 @@
         label="Email" 
         type="email" 
         :validator="emailValidator" 
-        placeholder="name@example.com"
+        placeholder="@example.com"
         :required="true"
       />
 
@@ -134,7 +134,7 @@ async function submitForm() {
     const formData = new FormData();
 
     // Явно добавляем только непустые поля
-    if (form.name)         formData.append('name', form.name);
+    if (form.name)         formData.append('fullName', form.name);
     if (form.city)         formData.append('city', form.city);
     if (form.email)        formData.append('email', form.email);
     if (form.phone)        formData.append('phone', form.phone);
@@ -178,7 +178,7 @@ onMounted(async () => {
   }
   const u = authStore.user;
   // Маппим snake_case → camelCase
-  form.name           = u.name || '';
+  form.name           = u.fullName || '';
   form.city           = u.city || '';
   form.email          = u.email || '';
   form.phone          = u.phone || '';

@@ -1,7 +1,6 @@
-// File: src/store/authStore.js
 import { defineStore } from 'pinia';
-import { authService } from '../services/authService';
-import router from '../router';
+import { authService } from '@/services/authService';
+import router from '@/router';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -9,33 +8,34 @@ export const useAuthStore = defineStore('auth', {
     token: localStorage.getItem('token') || null,
   }),
   getters: {
-    isAuthenticated: (state) => !!state.token,
-    userName: (state) => state.user?.name || '',
-  },
+  isAuthenticated: (state) => !!state.token,
+  userName: (state) => state.user?.fullName || '',
+},
   actions: {
     async login(credentials) {
-      const response = await authService.login(credentials);
-      this.token = response.data.token;
-      localStorage.setItem('token', this.token);
-      this.user = response.data.user;
+      const { data } = await authService.login(credentials);
+      this.token = data.token;
+      localStorage.setItem('token', data.token);
+      this.user = data.user;
       router.push('/');
     },
-    async register(data) {
-      const response = await authService.register(data);
-      this.token = response.data.token;
-      localStorage.setItem('token', this.token);
-      this.user = response.data.user;
-      router.push('/login');
+    async register(payload) {
+      const { data } = await authService.register(payload);
+      this.token = data.token;
+      localStorage.setItem('token', data.token);
+      this.user = data.user;      // сразу имя видно
+      router.push('/');           // можно сразу отправить на главную
     },
     async fetchProfile() {
-      const response = await authService.getProfile();
-      this.user = response.data;
+      const { data } = await authService.getProfile();
+      this.user = data;
     },
     logout() {
+      authService.logout();
       this.token = null;
       this.user = null;
       localStorage.removeItem('token');
       router.push('/login');
-    }
-  }
+    },
+  },
 });

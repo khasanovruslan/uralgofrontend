@@ -1,9 +1,9 @@
-// File: src/services/authService.js
-import apiClient from './apiClient';
+// src/services/authService.js  (frontend)
+import api from '@/api/axios';
 
 export const authService = {
-  register: (payload) => apiClient.post('/auth/register', payload),
-  login: (payload)    => apiClient.post('/auth/login', payload),
-  getProfile: ()      => apiClient.get('/user'),
-  // при необходимости logout удалить токен
+  register(data) { return api.post('/auth/register', data); },
+  login(data)    { return api.post('/auth/login',    data); },
+  logout()       { return api.post('/auth/logout');        },
+  getProfile()   { return api.get ('/user');               },   // 👈 корень!
 };
