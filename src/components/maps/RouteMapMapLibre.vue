@@ -170,8 +170,5 @@
   </script>
   
   <style scoped>
-  .route-map {
-    /* ширина/высота получаются из пропсов */
-  }
   </style>
   

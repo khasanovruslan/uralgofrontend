@@ -1,7 +1,7 @@
 <template>
   <main>
     <!-- ФОРМА ПОИСКА -->
-    <div class="hidden h-[430px] xl:flex flex-col items-center justify-center">
+    <div class="hidden h-[300px] xl:flex flex-col items-center justify-center">
       <p class="font-extrabold text-[48px] tracking-wide">Найти попутку</p>
       <div class="flex justify-between mt-[30px] w-screen items-center font-Montserrat text-[20px]">
         <div class="border-t border-black w-[160px]"></div>
