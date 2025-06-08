@@ -51,6 +51,15 @@
     if (mapInstance.getSource(ROUTE_SOURCE_ID)) {
       mapInstance.removeSource(ROUTE_SOURCE_ID)
     }
+
+
+  // Маркеры отправления / прибытия
+  new maplibregl.Marker({ color: 'green' })
+    .setLngLat([props.origin[1], props.origin[0]])
+    .addTo(mapInstance)
+  new maplibregl.Marker({ color: 'red' })
+    .setLngLat([props.destination[1], props.destination[0]])
+    .addTo(mapInstance)
   
     // Формируем строку запроса для OSRM (lng,lat;lng,lat)
     const coords = [
@@ -135,6 +144,7 @@
       center: [props.origin[1], props.origin[0]],
       zoom: 10,
     })
+    mapInstance.addControl(new maplibregl.NavigationControl(), 'top-right')
   
     mapInstance.on('load', () => {
       drawRoute()

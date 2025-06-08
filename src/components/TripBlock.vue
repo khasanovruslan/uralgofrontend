@@ -7,11 +7,11 @@
           <img src="/images/fromToArrow.svg" alt="" class="mr-3" />
           <p>{{ trip.destination }}</p>
         </div>
-        <p class="mt-3 font-light text-[24px]">
-          {{ formatDate(trip.departure_time) }}
+          <p class="mt-3 font-light text-[24px]">
+          {{ formatDate(trip.departureTime) }}      <!-- camelCase -->
         </p>
         <p class="mt-3 font-light text-[24px]">
-          Свободных мест: {{ trip.available_seats }}
+          Свободных мест: {{ trip.availableSeats }} <!-- camelCase -->
         </p>
       </div>
 
@@ -44,11 +44,11 @@ const props = defineProps({
 })
 
 function formatDate(dt) {
-  const d = new Date(dt)
-  return d.toLocaleDateString('ru-RU', {
+  const d = new Date(dt);
+  return d.toLocaleString('ru-RU', {
     year: 'numeric', month: 'long', day: 'numeric',
     hour: '2-digit', minute: '2-digit'
-  })
+  });
 }
 </script>
 

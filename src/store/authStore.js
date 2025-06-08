@@ -23,8 +23,8 @@ export const useAuthStore = defineStore('auth', {
       const { data } = await authService.register(payload);
       this.token = data.token;
       localStorage.setItem('token', data.token);
-      this.user = data.user;      // сразу имя видно
-      router.push('/');           // можно сразу отправить на главную
+      this.user = data.user;      
+      router.push('/');       
     },
     async fetchProfile() {
       const { data } = await authService.getProfile();

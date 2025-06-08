@@ -30,15 +30,7 @@
               <option value="4">4</option>
             </select>
           </div>
-          <div class="w-[600px] flex justify-between">
-            <p class="font-montserrat text-[20px] font-normal">Сколько людей изначально едут в автомобиле?</p>
-            <select v-model="trip.initialPassengers" class="outline-none border border-black w-10 h-10 rounded-full appearance-none font-montserrat text-[20px] text-center" style="text-align-last:center ;">
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-            </select>
-          </div>
+        
           <div class="w-[600px] flex justify-between">
             <p class="font-montserrat text-[20px] font-normal">Могут ли попутчики бронировать сразу?</p>
             <label class="relative inline-block w-16 h-8 cursor-pointer">
@@ -111,15 +103,6 @@
               <option value="5">5</option>
             </select>
           </div>
-          <div class="w-[400px] flex mt-[20px]">
-            <p class="font-montserrat font-semibold text-[16px] ml-[20px]">Сколько людей<br> изначально едут<br> в автомобиле?</p>
-            <select v-model="trip.initialPassengers" class="outline-none border border-black w-10 h-10 rounded-full appearance-none font-montserrat font-semibold text-[16px] text-center ml-[172px]" style="text-align-last:center ;">
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-            </select>
-          </div>
           <div class="w-[400px] flex">
             <p class="font-montserrat font-semibold text-[16px] ml-[20px]">Могут ли попутчики<br> бронировать сразу?</p>
             <label class="relative inline-block w-16 h-8 cursor-pointer ml-4">
@@ -158,7 +141,6 @@ const trip = ref({
   createDate: '',
   createTime: '',
   availableSeats: 1,
-  initialPassengers: 1,
   allowBooking: false,
   pricePerPassenger: '',
   description: ''
@@ -209,16 +191,15 @@ async function createTrip() {
     const payload = {
       origin: trip.value.fromWhere,
       destination: trip.value.toWhere,
-      departure_time: selectedDateTime.toISOString(), // это UTC, сервер должен быть готов
+      departureTime: selectedDateTime.toISOString(), // это UTC, сервер должен быть готов
       seats: +trip.value.availableSeats,
-      available_seats: +trip.value.availableSeats,
-      initial_passengers: +trip.value.initialPassengers,
-      allow_booking: trip.value.allowBooking,
+      availableSeats: +trip.value.availableSeats,
+      allowBooking: trip.value.allowBooking,
       price: +trip.value.pricePerPassenger,
       description: trip.value.description
     }
 
-    const response = await axios.post(`${import.meta.env.VITE_API_URL}/trips`, payload, {
+    const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/trips`, payload, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`
       }

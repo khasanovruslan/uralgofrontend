@@ -122,26 +122,18 @@
         КАРТ -->
 
         <div class="p-4">
-    <h1 class="text-2xl font-bold mb-6">Демо MapLibre-карт</h1>
 
-    <section class="mb-10">
-      <h2 class="text-xl font-semibold mb-2">Маршрут Москва → Санкт-Петербург</h2>
-      <RouteMapMapLibre
-        :origin="[55.7558, 37.6176]"
-        :destination="[59.9311, 30.3609]"
-        width="100%"
-        height="400px"
-      />
-    </section>
-
-    <section>
-      <h2 class="text-xl font-semibold mb-2">События на карте</h2>
-      <EventsMapMapLibre
-        :events="eventsOnMap"
-        width="100%"
-        height="500px"
-      />
-    </section>
+<section v-if="originCoords && destinationCoords" class="mb-10">
+  <h2 class="text-xl font-semibold mb-2">
+    Маршрут: {{ from }} → {{ to }}
+  </h2>
+  <RouteMapMapLibre
+    :origin="[originCoords.lat, originCoords.lng]"
+    :destination="[destinationCoords.lat, destinationCoords.lng]"
+    width="100%"
+    height="400px"
+  />
+</section>
   </div>
 
     
@@ -156,33 +148,7 @@ import { ref, onMounted, watch, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import TripBlock from '@/components/TripBlock.vue'
 import RouteMapMapLibre from '@/components/maps/RouteMapMapLibre.vue'
-import EventsMapMapLibre from '@/components/maps/EventsMapMapLibre.vue'
-
-const eventsOnMap = reactive([
-  {
-    id: 1,
-    title: 'Встреча попутчиков: Москва',
-    coords: [55.7558, 37.6176],
-    avatarUrl: 'https://i.pravatar.cc/50?img=3',
-    authorName: 'Алексей',
-    description: 'Ищем попутчиков до Санкт-Петербурга, выезд завтра утром.',
-    participants: [
-      { id: 101, name: 'Мария',   avatarUrl: 'https://i.pravatar.cc/50?img=5' },
-      { id: 102, name: 'Дмитрий', avatarUrl: 'https://i.pravatar.cc/50?img=7' },
-    ],
-  },
-  {
-    id: 2,
-    title: 'Пикник в Коломенском',
-    coords: [55.6845, 37.6256],
-    avatarUrl: 'https://i.pravatar.cc/50?img=4',
-    authorName: 'Ольга',
-    description: 'Приглашаю всех на субботний пикник!',
-    participants: [
-      { id: 201, name: 'Ирина', avatarUrl: 'https://i.pravatar.cc/50?img=9' },
-    ],
-  },
-])
+import { geocodeCity } from '@/utils/geocode.js'
 
 
 
@@ -194,7 +160,9 @@ const cities = ref([])
 const from = ref(route.query.from || '')
 const to = ref(route.query.to || '')
 const date = ref(route.query.date || '')
-const passengers = ref(route.query.pax || 1)
+const passengers = ref(Number(route.query.pax) || 1);
+const originCoords      = ref(null)  // { lat, lng }
+const destinationCoords = ref(null)
 const showFrom = ref(false)
 const showTo = ref(false)
 const minDate = new Date().toISOString().split('T')[0]
@@ -255,36 +223,71 @@ function formatDate(rawDate) {
 }
 
 async function fetchTrips() {
-  const { from, to, date } = route.query
-  if (!from || !to || !date) {
-    trips.value = []
-    return
+  const { from: qFrom, to: qTo, date: qDate, pax: qPax } = route.query;
+  if (!qFrom || !qTo || !qDate) {
+    trips.value = [];
+    return;
   }
 
-  const url = `${import.meta.env.VITE_API_URL}/trips` +
-    `?origin=${encodeURIComponent(from)}` +
-    `&destination=${encodeURIComponent(to)}` +
-    `&date=${encodeURIComponent(date)}`
 
+  const params = new URLSearchParams({
+    origin:      qFrom,
+    destination: qTo,
+    date:        qDate,
+    pax:         qPax ?? '1'
+  });
+  const url = `${import.meta.env.VITE_API_URL}/api/trips?${params}`;
+
+  const token = localStorage.getItem('token');
+  if (!token) {
+    router.push('/login');
+    return;
+  }
+
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error(res.statusText);
+  trips.value = await res.json();
+}
+
+// Загружает coords для from и to
+async function loadRoutes() {
+  if (!from.value || !to.value) {
+    originCoords.value = null
+    destinationCoords.value = null
+    return
+  }
   try {
-    const token = localStorage.getItem('token')
-
-    const res = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-    if (!res.ok) throw new Error(res.statusText)
-    const data = await res.json()
-    trips.value = data
-  } catch (e) {
-    console.error('Ошибка загрузки поездок:', e)
-    trips.value = []
+    originCoords.value      = await geocodeCity(from.value)
+    destinationCoords.value = await geocodeCity(to.value)
+  } catch (err) {
+    console.error('Геокодинг не удался:', err)
+    originCoords.value = destinationCoords.value = null
   }
 }
 
-onMounted(fetchTrips)
-watch(() => route.query, fetchTrips)
+
+onMounted(fetchCities)
+onMounted(async () => {
+  await fetchTrips()
+  await loadRoutes()
+})
+ 
+
+watch(() => route.query, async (q) => {
+  // обновляем поля формы…
+  from.value       = q.from || ''
+  to.value         = q.to   || ''
+  date.value       = q.date || ''
+  passengers.value = Number(q.pax) || 1
+
+  // перезапускаем fetch и геокодинг
+  await fetchTrips()
+  await loadRoutes()
+})
+
+
 </script>
 
 <style scoped>

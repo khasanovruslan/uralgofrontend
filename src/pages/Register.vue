@@ -18,13 +18,13 @@
           <label for="name-desktop" class="registerText text-white">Имя</label>
           <input
             id="name-desktop"
-            v-model="form.name"
+            v-model="form.fullName"
             type="text"
             autocomplete="name"
             class="h-[46px] w-[424px] rounded-[6px] mt-2 pl-4"
             placeholder="Введите имя"
           />
-          <p v-if="errorMessage && !form.name" class="text-red-400 text-sm mt-1">
+          <p v-if="errorMessage && !form.fullName" class="text-red-400 text-sm mt-1">
             Поле «Имя» не может быть пустым
           </p>
         </div>
@@ -137,13 +137,13 @@
           <label for="name-mobile" class="text-sm font-medium text-gray-700">Имя</label>
           <input
             id="name-mobile"
-            v-model="form.name"
+            v-model="form.fullName"
             type="text"
             autocomplete="name"
             class="h-[40px] w-full rounded-md mt-1 pl-3 border border-gray-300"
             placeholder="Введите имя"
           />
-          <p v-if="errorMessage && !form.name" class="text-red-500 text-xs mt-1">
+          <p v-if="errorMessage && !form.fullName" class="text-red-500 text-xs mt-1">
             Поле «Имя» не может быть пустым
           </p>
         </div>
@@ -234,7 +234,7 @@ const authStore = useAuthStore();
 
 // Сбор полей формы
 const form = reactive({
-  name: '',
+  fullName: '',
   email: '',
   phone: '',
   password: '',
@@ -246,7 +246,7 @@ const serverError = ref(''); // для ошибок от сервера
 
 async function registerUser() {
   // 1) Базовая валидация на пустые поля и длину пароля
-  if (!form.name || !form.email || !form.phone || form.password.length < 6) {
+  if (!form.fullName || !form.email || !form.phone || form.password.length < 6) {
     errorMessage.value = 'Пожалуйста, заполните все поля корректно';
     return;
   }
