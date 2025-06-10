@@ -13,6 +13,7 @@ const Destinations = () => import('@/pages/Destinations.vue')
 const TripResults  = () => import('@/pages/TripResults.vue')
 const Experiences  = () => import('@/pages/Experiences.vue')
 const NotFound     = () => import('@/pages/NotFound.vue')
+const Booking     = () => import('@/pages/Booking.vue')
 
 const routes = [
   {
@@ -38,6 +39,12 @@ const routes = [
     name: 'account',
     component: Account,
     meta: { requiresAuth: true, title: 'Личный кабинет' }
+  },
+  {
+    path: '/bookings',
+    name: 'bookings',
+    component: Booking,
+    meta: { requiresAuth: true, title: 'Бронирования' }
   },
   {
     path: '/create-trip',

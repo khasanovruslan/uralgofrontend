@@ -50,8 +50,7 @@
           :style="{ backgroundImage: 'url(/images/bookTrip.svg)' }"
           :disabled="!trip.allowBooking || trip.seats === 0"
           :class="{ 'opacity-50 cursor-not-allowed': !trip.allowBooking || trip.seats === 0 }"
-        >
-        </button>
+        ></button>
       </div>
     </div>
   </div>

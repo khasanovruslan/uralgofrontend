@@ -23,7 +23,7 @@
           </div>
           <div class="w-[600px] flex justify-between">
             <p class="font-montserrat text-[20px] font-normal">Сколько свободных мест в автомобиле?</p>
-            <select v-model="trip.availableSeats" class="outline-none border border-black w-10 h-10 rounded-full appearance-none font-montserrat text-[20px] text-center" style="text-align-last:center ;">
+            <select v-model="trip.seats" class="outline-none border border-black w-10 h-10 rounded-full appearance-none font-montserrat text-[20px] text-center" style="text-align-last:center ;">
               <option value="1">1</option>
               <option value="2">2</option>
               <option value="3">3</option>
@@ -95,7 +95,7 @@
           </div>
           <div class="w-[400px] flex mt-[30px]">
             <p class="font-montserrat font-semibold text-[16px] ml-[20px]">Сколько свободных мест<br> в автомобиле?</p>
-            <select v-model="trip.availableSeats" class="outline-none border border-black w-10 h-10 rounded-full appearance-none font-montserrat font-semibold text-[16px] text-center -mt-[5px] ml-[100px]" style="text-align-last:center ;">
+            <select v-model="trip.seats" class="outline-none border border-black w-10 h-10 rounded-full appearance-none font-montserrat font-semibold text-[16px] text-center -mt-[5px] ml-[100px]" style="text-align-last:center ;">
               <option value="1">1</option>
               <option value="2">2</option>
               <option value="3">3</option>
@@ -140,7 +140,7 @@ const trip = ref({
   toWhere: '',
   createDate: '',
   createTime: '',
-  availableSeats: 1,
+  seats: 1,
   allowBooking: false,
   pricePerPassenger: '',
   description: ''
@@ -192,8 +192,8 @@ async function createTrip() {
       origin: trip.value.fromWhere,
       destination: trip.value.toWhere,
       departureTime: selectedDateTime.toISOString(), // это UTC, сервер должен быть готов
-      seats: +trip.value.availableSeats,
-      availableSeats: +trip.value.availableSeats,
+      seats: +trip.value.seats,
+      seats: +trip.value.seats,
       allowBooking: trip.value.allowBooking,
       price: +trip.value.pricePerPassenger,
       description: trip.value.description

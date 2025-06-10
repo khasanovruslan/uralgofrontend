@@ -1,4 +1,3 @@
-
 <template>
   <div class="modal-backdrop" @click.self="close">
     <div class="modal-window bg-white rounded-lg shadow-lg max-w-lg w-full mx-4 my-10 p-6 overflow-auto">
@@ -7,17 +6,19 @@
       </button>
       <h2 class="text-2xl font-semibold mb-4">Маршрут: {{ trip.origin }} → {{ trip.destination }}</h2>
 
-      <!-- Мини-карта маршрута -->
+      <!-- Мини-карта -->
       <div class="h-64 mb-4">
         <RouteMapMapLibre
+          v-if="originCoords && destinationCoords"
           :origin="[originCoords.lat, originCoords.lng]"
           :destination="[destinationCoords.lat, destinationCoords.lng]"
           width="100%"
           height="100%"
         />
+        <p v-else class="text-center text-gray-500">Загрузка карты...</p>
       </div>
 
-      <!-- Информация о водителе -->
+      <!-- Водитель -->
       <div class="flex items-center mb-4">
         <img
           :src="avatarSrc"
@@ -26,7 +27,9 @@
         />
         <div>
           <p class="font-medium">{{ trip.creator.fullName }}</p>
-          <p v-if="trip.creator.phone" class="text-sm text-gray-600">Телефон: {{ trip.creator.phone }}</p>
+          <p v-if="trip.creator.phone" class="text-sm text-gray-600">
+            Телефон: {{ trip.creator.phone }}
+          </p>
         </div>
       </div>
 
@@ -34,18 +37,20 @@
       <p v-if="trip.description" class="mb-4 text-gray-700">{{ trip.description }}</p>
       <p v-else class="mb-4 text-gray-500">Описание отсутствует.</p>
 
-      <!-- Бронирование -->
+      <!-- Выбор мест -->
       <div class="mb-4">
         <label class="block text-sm font-medium mb-1">Количество мест:</label>
         <input
           type="number"
           min="1"
-          :max="trip.availableSeats"
+          :max="trip.seats"
           v-model.number="seatsReserved"
           class="w-20 p-1 border rounded"
         />
-        <span class="ml-2 text-sm text-gray-600">(доступно: {{ trip.availableSeats }})</span>
+        <span class="ml-2 text-sm text-gray-600">(доступно: {{ trip.seats }})</span>
       </div>
+
+      <!-- Кнопка -->
       <button
         class="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
         :disabled="!canReserve"
@@ -58,58 +63,75 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import RouteMapMapLibre from '@/components/maps/RouteMapMapLibre.vue'
 import { geocodeCity } from '@/utils/geocode.js'
-import { useRouter } from 'vue-router'
 
 const props = defineProps({
   trip: { type: Object, required: true }
 })
 const emit = defineEmits(['close', 'booked'])
-
-const seatsReserved = ref(1)
-const originCoords = ref(null)
-const destinationCoords = ref(null)
 const router = useRouter()
 
-// Настройка аватара
-const baseUrl = import.meta.env.VITE_API_URL || ''
-const avatarSrc = computed(() => {
-  return props.trip.creator.photoUrl
-    ? baseUrl + props.trip.creator.photoUrl
+const seatsReserved   = ref(1)
+const originCoords    = ref(null)
+const destinationCoords = ref(null)
+const baseUrl         = import.meta.env.VITE_API_URL || ''
+const avatarSrc       = computed(() =>
+  props.trip.creator.photoUrl
+    ? `${baseUrl}${props.trip.creator.photoUrl}`
     : '/images/default-avatar.svg'
-})
-
-const canReserve = computed(() => {
-  return seatsReserved.value >= 1 && seatsReserved.value <= props.trip.availableSeats
-})
+)
+const canReserve      = computed(() =>
+  seatsReserved.value >= 1 &&
+  seatsReserved.value <= props.trip.seats &&
+  props.trip.allowBooking
+)
 
 async function loadCoords() {
   try {
-    originCoords.value = await geocodeCity(props.trip.origin)
+    originCoords.value      = await geocodeCity(props.trip.origin)
     destinationCoords.value = await geocodeCity(props.trip.destination)
-  } catch {
+  } catch (err) {
+    console.error('Геокодинг не удался:', err)
     originCoords.value = destinationCoords.value = null
   }
 }
 
 async function reserve() {
-  const token = localStorage.getItem('token')
-  const res = await fetch(`${baseUrl}/api/bookings`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: JSON.stringify({ tripId: props.trip.id, seatsReserved: seatsReserved.value })
-  })
-  if (res.ok) {
+  try {
+    const token = localStorage.getItem('token')
+    const res = await fetch(`${baseUrl}/api/bookings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        tripId:        props.trip.id,
+        seatsReserved: seatsReserved.value
+      })
+    })
+
+    if (!res.ok) {
+      const err = await res.json()
+      throw new Error(err.message || 'Ошибка бронирования')
+    }
+
+    // Успех!
     emit('booked')
     close()
-  } else {
-    const err = await res.json()
-    alert(err.message || 'Ошибка бронирования')
+
+    // Окно-подтверждение с переходом
+    const go = window.confirm(
+      'Вы успешно забронировали поездку! Перейти в «Актуальные бронирования»?'
+    )
+    if (go) {
+      router.push('/bookings')  // адаптируйте путь под ваш роут
+    }
+  } catch (err) {
+    alert(err.message)
   }
 }
 
@@ -122,23 +144,16 @@ onMounted(loadCoords)
 
 <style scoped>
 .modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
   z-index: 1000;
 }
 .modal-window {
   position: relative;
 }
 .modal-close {
-  font-size: 1.25rem;
-  background: transparent;
-  border: none;
+  font-size: 1.25rem; background: none; border: none;
 }
 </style>
