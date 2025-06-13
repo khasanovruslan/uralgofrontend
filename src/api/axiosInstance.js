@@ -1,9 +1,6 @@
-// File: src/api/axiosInstance.js
 import axios from 'axios';
 
-// VITE_API_URL задаётся в .env (файл .env.development или .env)
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
+const baseURL = (import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/api';
 const api = axios.create({
   baseURL,
   withCredentials: true,
@@ -11,7 +8,7 @@ const api = axios.create({
 
 // Интерцептор запросов: добавляем токен из localStorage
 api.interceptors.request.use(cfg => {
-  const token = localStorage.getItem('accessToken');
+  const token = localStorage.getItem('token');
   if (token) {
     cfg.headers.Authorization = `Bearer ${token}`;
   }

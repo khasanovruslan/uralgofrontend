@@ -91,7 +91,106 @@
         <div class="border-t border-black w-[160px]"></div>
       </div>
     </div>
-    <div class="h-[300px]"></div>
+    
+
+    <!-- MOBILE: экраны < xl -->
+    <!-- MOBILE -->
+    <div class="xl:hidden flex flex-col items-center px-4">
+      <!-- Заголовок -->
+      <p class="text-[24px] font-extrabold mt-12 text-center">Найти попутку</p>
+      <div class="border-t border-black w-full my-2"></div>
+
+      <form @submit.prevent="onFind"
+            class="w-full max-w-sm flex flex-col space-y-4">
+        <!-- Откуда / Куда -->
+           <div class="flex items-start space-x-2">
+          <img src="/images/createTripPageArrows.svg"
+               alt=""
+               class="h-7 rotate-90 flex-shrink-0 mt-8" />
+          <div class="flex-1 flex flex-col mt-4 space-y-4">
+            <input
+              v-model="from"
+              list="fromCities"
+              placeholder="Откуда?"
+              required
+              class="w-full font-montserrat font-semibold text-[16px]
+                     text-black outline-none border-b border-black"
+            />
+            <datalist id="fromCities">
+              <option v-for="city in cities" :key="city.city" :value="city.city" />
+            </datalist>
+
+            <input
+              v-model="to"
+              list="toCities"
+              placeholder="Куда?"
+              required
+              class="w-full font-montserrat font-semibold text-[16px]
+                     text-black outline-none border-b border-black"
+            />
+            <datalist id="toCities">
+              <option v-for="city in cities" :key="city.city" :value="city.city" />
+            </datalist>
+          </div>
+        </div>
+
+        <!-- Список подсказок можно оставить прежний -->
+        <div v-if="showFrom" class="autocomplete-suggestions mt-[-2px]">
+          <div
+            v-for="c in filteredCities(from)"
+            :key="c.city"
+            class="autocomplete-suggestion"
+            @click="select('from', c.city)"
+          >{{ c.city }}</div>
+        </div>
+        <div v-if="showTo" class="autocomplete-suggestions mt-[-2px]">
+          <div
+            v-for="c in filteredCities(to)"
+            :key="c.city"
+            class="autocomplete-suggestion"
+            @click="select('to', c.city)"
+          >{{ c.city }}</div>
+        </div>
+
+        <!-- Дата -->
+        <div class="relative">
+          <input
+            v-model="date"
+            type="date"
+            :min="minDate"
+            class="w-full font-montserrat font-semibold text-[20px]
+                   outline-none border-b border-black"
+          />
+        </div>
+
+        <!-- Пассажиры -->
+        <div class="flex justify-between items-center">
+          <p class="font-montserrat font-semibold text-[16px]">Пассажиров</p>
+          <select
+            v-model="passengers"
+            class="outline-none border border-black w-12 h-10 rounded-full
+                   text-center font-montserrat font-semibold text-[16px]"
+          >
+            <option v-for="n in 5" :key="n" :value="n">{{ n }}</option>
+          </select>
+        </div>
+
+        <!-- Кнопка -->
+        <div class="flex justify-center mt-4">
+          <button
+            type="submit"
+            class="outline-none border-none bg-white w-[232px] h-[39px]
+                   bg-contain bg-no-repeat"
+            style="background-image: url(/images/findTripPageFindBtn.svg);"
+          ></button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Чтобы контент не «обрезался» скроллом -->
+    <div class="h-[200px]"></div>
+
+    
   </main>
 </template>
 

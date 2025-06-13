@@ -1,3 +1,4 @@
+//store/authStore.js
 import { defineStore } from 'pinia';
 import { authService } from '@/services/authService';
 import router from '@/router';

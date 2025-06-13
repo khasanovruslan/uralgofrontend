@@ -2,7 +2,7 @@
 <template>
     <router-link
       :to="to"
-      class="inline-block cursor-pointer hover:opacity-80 focus:outline-none"
+      class="inline-block cursor-pointer hover:opacity-70 focus:outline-none"
       v-bind="$attrs"
     >
       <slot />

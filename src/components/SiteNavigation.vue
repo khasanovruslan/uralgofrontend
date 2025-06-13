@@ -50,7 +50,7 @@
               v-if="authStore.isAuthenticated"
               class="menu-item"
               role="menuitem"
-              @click="goTo('/account')"
+              @click="goTo('/bookings')"
             >актуальные</li>
           </ul>
         </div>
@@ -141,7 +141,7 @@
           <NavLink to="/experiences">впечатления</NavLink>
           <NavLink v-if="isDriver" to="/create-trip">создать поездку</NavLink>
           <NavLink to="/find-trip">найти поездку</NavLink>
-          <NavLink v-if="authStore.isAuthenticated" to="/account">актуальные бронирования</NavLink>
+          <NavLink v-if="authStore.isAuthenticated" to="/bookings">актуальные бронирования</NavLink>
         </nav>
       </div>
     </transition>

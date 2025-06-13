@@ -11,7 +11,7 @@
           <div class="relative w-[180px]">
             <input
               v-model="from"
-              @input="showSuggestions('from')"
+              @input="showSuggestions('from')"  
               type="text"
               placeholder="откуда"
               class="w-full h-full text-center"
@@ -86,15 +86,8 @@
       </div>
     </div>
 
-    <!-- 2. Параметры запроса -->
-    <div class="text-center my-6">
-      <h2 class="text-xl font-semibold">
-        Поездки из {{ from }} в {{ to }} на {{ formatDate(date) }}
-      </h2>
-    </div>
-
     <!-- 3. Список результатов -->
-    <div class="trip-results mt-10 space-y-4">
+    <div class="trip-results">
       <TripBlock
         v-for="trip in trips"
         :key="trip.id"
