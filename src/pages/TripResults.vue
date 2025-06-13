@@ -169,16 +169,20 @@ function formatDate(d) {
 // Навигация при поиске
 function onFind() {
   if (!from.value || !to.value || !date.value) {
-    return alert('Заполните все поля поиска')
+    alert('Заполните все поля поиска')
+    return
   }
   if (new Date(date.value) < new Date(minDate)) {
-    return alert('Выберите будущую дату')
+    alert('Выберите будущую дату')
+    return
   }
   router.push({
     path: '/results',
     query: {
-      from, to, date,
-      pax: passengers.value
+      from: from.value,
+      to:   to.value,
+      date: date.value,
+      pax:  passengers.value
     }
   })
 }

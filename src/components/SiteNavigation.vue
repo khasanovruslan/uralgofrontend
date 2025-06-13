@@ -1,94 +1,222 @@
 <template>
-  <header class="sticky top-0 h-12 xl:h-24 w-full bg-headerImage bg-no-repeat bg-cover bg-center xl:flex xl:items-center xl:justify-between px-4 lg:px z-10">
-    <div class="flex items-center absolute">
-      <nav class="m-8 space-x-8 lg:space-x-8 font-normal hidden xl:block tracking-2pct md:text-sm">
-        <NavLink to="/" class="">главная</NavLink>
-        <NavLink to="/destinations" class="">направления</NavLink>
-        <NavLink to="/experiences" class="">впечатления</NavLink>
-
-        <div class="relative group inline-block  ml-8">
-      <div
-        class="flex items-center cursor-pointer select-none"
-        @click="toggleMenu"
-      >
-        <span class="font-normal tracking-2pct md:text-sm">поездки</span>
-        <svg
-          class="ml-1 w-3 h-3 transform transition-transform duration-200"
-          :class="{ 'rotate-180': menuOpen }"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-        </svg>
-      </div>
-
-      <!-- Выпадающее меню -->
-      <div
-        v-if="menuOpen"
-        class="absolute flex flex-col mt-2 right-0 bg-white border border-gray-300 shadow-md rounded-md z-50 w-40 text-black text-sm"
-      >
-        <ul>
-          <li v-if="authStore.isAuthenticated && authStore.user?.roles?.some(r => r.name === 'Driver')" class="menu-item" @click="goTo('/create-trip')">
-            создать
-          </li>
-          <li class="menu-item" @click="goTo('/find-trip')">найти</li>
-          <li v-if="authStore.isAuthenticated" class="menu-item" @click="goTo('/account')">актуальные</li>
-        </ul>
-      </div>
-    </div>
-
-
+  <header class="sticky top-0 w-full bg-headerImage bg-no-repeat bg-cover bg-center z-50">
+    <!-- Десктопная шапка -->
+    <div class="hidden xl:flex items-center justify-between h-24 px-8 relative">
+      <!-- Левое меню -->
+      <nav class="flex items-center space-x-8 text-sm font-normal">
+        <NavLink to="/">главная</NavLink>
+        <NavLink to="/destinations">направления</NavLink>
+        <NavLink to="/experiences">впечатления</NavLink>
+        <!-- Dropdown «поездки» -->
+        <div ref="dropdownRef" class="relative" @keydown.esc="menuOpen = false">
+          <button
+            @click="toggleMenu"
+            class="flex items-center space-x-1 focus:outline-none"
+            aria-haspopup="true"
+            :aria-expanded="menuOpen"
+          >
+            <span>поездки</span>
+            <svg
+              class="w-3 h-3 transform transition-transform duration-200"
+              :class="{ 'rotate-180': menuOpen }"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </button>
+          <ul
+            v-show="menuOpen"
+            class="absolute right-0 mt-2 w-40 bg-white border border-gray-300 shadow-lg rounded-md z-50"
+            role="menu"
+            aria-label="Меню поездок"
+          >
+            <li
+              v-if="authStore.isAuthenticated && isDriver"
+              class="menu-item"
+              role="menuitem"
+              @click="goTo('/create-trip')"
+            >создать</li>
+            <li
+              class="menu-item"
+              role="menuitem"
+              @click="goTo('/find-trip')"
+            >найти</li>
+            <li
+              v-if="authStore.isAuthenticated"
+              class="menu-item"
+              role="menuitem"
+              @click="goTo('/account')"
+            >актуальные</li>
+          </ul>
+        </div>
       </nav>
-    </div>
-    <div class="flex-grow flex justify-start xl:justify-center items-center h-12">
-      <NavLink to="/" class="xl:text-6xl font-Montserrat font-black opacity-80 text-2xl">uralgo</NavLink>
-    </div>
-    <div class="xl:hidden absolute flex space-x-5 -mt-[35px] right-6">
-      <button class="focus:outline-none bg-userIcon bg-contain bg-no-repeat w-[26px] h-[26px]"></button>
-      <button class="focus:outline-none bg-burgerIcon bg-contain bg-no-repeat w-[26px] h-[26px]"></button>
-    </div>
-    <!--Шапка для компьютера-->
-    <div class="hidden xl:flex absolute right-0 mr-0.5 xl:mr-4 border-[1px] border-black border-opacity-15 bg-white bg-opacity-40 min-h-10 min-w-24 bg-no-repeat items-center justify-center pl-[15px] pr-[15px] pt-[10px] pb-[10px] z-15 rounded-[100px]">
+
+      <!-- Логотип по центру -->
       <NavLink
-        :to="authStore.isAuthenticated ? '/account' : '/login'"
-        class="font-bold text-md opacity-90 focus:outline-none z-20"
+        to="/"
+        class="absolute left-1/2 transform -translate-x-1/2 text-6xl font-black opacity-80"
       >
-        {{ authStore.isAuthenticated ? authStore.userName : 'войти' }}
+        uralgo
       </NavLink>
+
+      <!-- Кнопка «войти» или имя пользователя -->
+      <div
+        class="border border-black border-opacity-15 bg-white bg-opacity-40 px-4 py-2 rounded-full flex items-center justify-center z-15"
+      >
+        <template v-if="authStore.isAuthenticated && authStore.user">
+          <NavLink to="/account" class="flex items-center focus:outline-none">
+            <img
+              :src="userAvatar"
+              alt="Аватар пользователя"
+              class="w-8 h-8 rounded-full object-cover mr-2"
+              loading="lazy"
+            />
+            <span class="font-bold text-md opacity-90">
+              {{ authStore.user.fullName }}
+            </span>
+          </NavLink>
+        </template>
+        <template v-else>
+          <NavLink to="/login" class="font-bold text-md opacity-90 focus:outline-none">
+            войти
+          </NavLink>
+        </template>
+      </div>
     </div>
+
+    <!-- Мобильная шапка -->
+    <div class="xl:hidden flex items-center justify-between h-12 px-4 relative">
+      <!-- Логотип слева -->
+      <NavLink to="/" class="text-2xl font-black">uralgo</NavLink>
+
+      <div class="flex items-center space-x-4">
+        <!-- Кнопка входа / аватар -->
+        <div>
+          <template v-if="authStore.isAuthenticated && authStore.user">
+            <NavLink to="/account" class="focus:outline-none">
+              <img
+                :src="userAvatar"
+                alt="Аватар"
+                class="w-8 h-8 rounded-full object-cover"
+                loading="lazy"
+              />
+            </NavLink>
+          </template>
+          <template v-else>
+            <NavLink to="/login" class="font-bold text-md opacity-90 focus:outline-none">
+              войти
+            </NavLink>
+          </template>
+        </div>
+
+        <!-- Бургер -->
+        <button
+          @click="toggleMobileMenu"
+          class="focus:outline-none transform transition-transform duration-200"
+          :class="{ 'rotate-90': mobileMenuOpen }"
+          aria-label="Открыть меню"
+          :aria-expanded="mobileMenuOpen"
+        >
+          <img src="/images/burgerIcon.svg" alt="Меню" class="w-8 h-8" loading="lazy" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Мобильное меню -->
+    <transition name="slide-down">
+      <div
+        v-show="mobileMenuOpen"
+        class="xl:hidden bg-white shadow-md"
+        role="menu"
+        aria-label="Мобильное меню"
+      >
+        <nav class="flex flex-col p-4 space-y-2">
+          <NavLink to="/">главная</NavLink>
+          <NavLink to="/destinations">направления</NavLink>
+          <NavLink to="/experiences">впечатления</NavLink>
+          <NavLink v-if="isDriver" to="/create-trip">создать поездку</NavLink>
+          <NavLink to="/find-trip">найти поездку</NavLink>
+          <NavLink v-if="authStore.isAuthenticated" to="/account">актуальные бронирования</NavLink>
+        </nav>
+      </div>
+    </transition>
   </header>
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
-import { useAuthStore } from '@/store/authStore';
-import NavLink from '@/components/buttons/NavLink.vue';
-import { ref } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/store/authStore'
+import NavLink from '@/components/buttons/NavLink.vue'
+import defaultAvatar from '@/assets/images/default-avatar.svg'
+
 const router = useRouter()
+const authStore = useAuthStore()
+
 const menuOpen = ref(false)
+const mobileMenuOpen = ref(false)
+const dropdownRef = ref(null)
+
+// Проверяем роль водителя
+const isDriver = computed(
+  () => authStore.isAuthenticated && authStore.user?.roles?.some(r => r.name === 'Driver')
+)
+
+// Формируем URL аватара или используем дефолт
+const baseUrl = import.meta.env.VITE_API_URL || ''
+const userAvatar = computed(() => {
+  const photo = authStore.user?.photoUrl
+  return authStore.isAuthenticated && photo
+    ? `${baseUrl}${photo}`
+    : defaultAvatar
+})
 
 function toggleMenu() {
   menuOpen.value = !menuOpen.value
 }
 
+function toggleMobileMenu() {
+  mobileMenuOpen.value = !mobileMenuOpen.value
+}
+
 function goTo(path) {
   menuOpen.value = false
+  mobileMenuOpen.value = false
   router.push(path)
 }
 
-const authStore = useAuthStore();
+function handleClickOutside(e) {
+  if (dropdownRef.value && !dropdownRef.value.contains(e.target)) {
+    menuOpen.value = false
+  }
+}
 
-// при монтировании подгружаем профиль
+function handleScroll() {
+  menuOpen.value = false
+}
+
 onMounted(async () => {
+  document.addEventListener('click', handleClickOutside)
+  window.addEventListener('scroll', handleScroll)
+
   if (authStore.token && !authStore.user) {
     try {
-      await authStore.fetchProfile();
+      await authStore.fetchProfile()
     } catch {
-      authStore.logout();
+      authStore.logout()
     }
   }
-});
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <style scoped>
@@ -96,17 +224,25 @@ onMounted(async () => {
   padding: 10px 15px;
   cursor: pointer;
   text-align: left;
-  border-bottom: 1px solid black;
-  width: 100%;
-
+  border-bottom: 1px solid rgba(0,0,0,0.15);
 }
-
 .menu-item:last-child {
   border-bottom: none;
 }
-
 .menu-item:hover {
   background-color: #f0f0f0;
 }
-
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: max-height 0.3s ease;
+}
+.slide-down-enter-from,
+.slide-down-leave-to {
+  max-height: 0;
+  overflow: hidden;
+}
+.slide-down-enter-to,
+.slide-down-leave-from {
+  max-height: 400px;
+}
 </style>
