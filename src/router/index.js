@@ -11,9 +11,11 @@ const CreateTrip   = () => import('@/pages/CreateTrip.vue')
 const FindTrip     = () => import('@/pages/FindTrip.vue')
 const Destinations = () => import('@/pages/Destinations.vue')
 const TripResults  = () => import('@/pages/TripResults.vue')
-const Experiences  = () => import('@/pages/Experiences.vue')
+const Events  = () => import('@/pages/Events.vue')
 const NotFound     = () => import('@/pages/NotFound.vue')
 const Booking     = () => import('@/pages/Booking.vue')
+const MyEventsPage  = () => import('@/pages/MyEventsPage.vue')
+const EventChatPage = () => import('@/pages/EventChatPage.vue')
 
 const routes = [
   {
@@ -71,10 +73,22 @@ const routes = [
     meta: { title: 'Результаты поездок' }
   },
   {
-    path: '/experiences',
-    name: 'experiences',
-    component: Experiences,
-    meta: { title: 'Впечатления' }
+    path: '/events',
+    name: 'events',
+    component: Events,
+    meta: { title: 'События' }
+  },
+    {
+    path: '/my-events',
+    name: 'my-events',
+    component: MyEventsPage,
+    meta: { requiresAuth: true, title: 'Мои события' }
+  },
+  {
+    path: '/events/:id/chat',
+    name: 'event-chat',
+    component: EventChatPage,
+    meta: { requiresAuth: true, title: 'Чат события' }
   },
   // 404
   {

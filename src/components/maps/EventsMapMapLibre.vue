@@ -1,270 +1,244 @@
-
+<!-- File: src/components/maps/EventsMapMapLibre.vue -->
 <template>
-  <div class="relative w-full h-screen">
-    <!-- Контейнер карты -->
-    <div ref="mapContainer" class="w-[800px] h-[500px]"></div>
-
-    <!-- Модалка создания события -->
-    <div
-      v-if="showCreate"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-    >
-      <form
-        @submit.prevent="submitEvent"
-        class="bg-white rounded-lg w-full max-w-md p-6 space-y-4 overflow-auto max-h-[90vh]"
+  <div class="relative overflow-hidden" :style="{ width, height }">
+    <!-- Поиск -->
+    <div class="absolute top-4 right-4 z-50 w-64">
+      <input
+        v-model="query"
+        @input="onQueryChange"
+        @input.debounce="doSearch"
+        type="search"
+        placeholder="Найти город, улицу..."
+        class="w-full px-3 py-1 rounded border"
+      />
+      <ul
+        v-if="suggestions.length"
+        class="bg-white rounded shadow mt-1 max-h-48 overflow-auto"
       >
-        <h2 class="text-xl font-bold">Новое событие</h2>
-        <p>Координаты: {{ newEvent.longitude.toFixed(5) }}, {{ newEvent.latitude.toFixed(5) }}</p>
-
-        <!-- Обязательно -->
-        <div class="space-y-2">
-          <label class="block font-semibold">Название *</label>
-          <input
-            v-model="newEvent.title"
-            type="text"
-            required
-            class="w-full border border-gray-300 rounded px-3 py-2"
-          />
-        </div>
-        <div class="space-y-2">
-          <label class="block font-semibold">Тип *</label>
-          <input
-            v-model="newEvent.type"
-            type="text"
-            required
-            class="w-full border border-gray-300 rounded px-3 py-2"
-          />
-        </div>
-        <div class="space-y-2">
-          <label class="block font-semibold">Дата/время начала *</label>
-          <input
-            v-model="newEvent.startTime"
-            type="datetime-local"
-            required
-            class="w-full border border-gray-300 rounded px-3 py-2"
-          />
-        </div>
-
-        <!-- Опционально -->
-        <div class="space-y-2">
-          <label class="block font-semibold">Дата/время окончания</label>
-          <input
-            v-model="newEvent.endTime"
-            type="datetime-local"
-            class="w-full border border-gray-300 rounded px-3 py-2"
-          />
-        </div>
-        <div class="space-y-2">
-          <label class="block font-semibold">Описание</label>
-          <textarea
-            v-model="newEvent.description"
-            class="w-full border border-gray-300 rounded px-3 py-2 resize-vertical"
-            rows="3"
-          ></textarea>
-        </div>
-        <div class="space-y-2">
-          <label class="block font-semibold">Адрес</label>
-          <input
-            v-model="newEvent.address"
-            type="text"
-            class="w-full border border-gray-300 rounded px-3 py-2"
-          />
-        </div>
-        <div class="space-y-2">
-          <label class="block font-semibold">Максимум участников</label>
-          <input
-            v-model.number="newEvent.maxParticipants"
-            type="number"
-            min="1"
-            class="w-full border border-gray-300 rounded px-3 py-2"
-          />
-        </div>
-        <div class="space-y-2">
-          <label class="block font-semibold">URL изображения</label>
-          <input
-            v-model="newEvent.imageUrl"
-            type="url"
-            class="w-full border border-gray-300 rounded px-3 py-2"
-          />
-        </div>
-        <div class="space-y-2">
-          <label class="block font-semibold">Категория</label>
-          <input
-            v-model="newEvent.category"
-            type="text"
-            class="w-full border border-gray-300 rounded px-3 py-2"
-          />
-        </div>
-        <div class="space-y-2">
-          <label class="block font-semibold">Теги (через запятую)</label>
-          <input
-            v-model="newEvent.tags"
-            type="text"
-            placeholder="tag1, tag2, tag3"
-            class="w-full border border-gray-300 rounded px-3 py-2"
-          />
-        </div>
-
-        <div class="flex justify-end space-x-2 pt-4">
-          <button
-            type="button"
-            @click="showCreate = false"
-            class="px-4 py-2"
-          >Отмена</button>
-          <button
-            type="submit"
-            class="px-4 py-2 bg-blue-600 text-white rounded"
-          >Создать</button>
-        </div>
-      </form>
+        <li
+          v-for="item in suggestions"
+          :key="item.place_id"
+          @click="selectSuggestion(item)"
+          class="px-2 py-1 hover:bg-gray-100 cursor-pointer text-sm"
+        >
+          {{ item.display_name }}
+        </li>
+      </ul>
     </div>
+
+    <!-- Контейнер карты -->
+    <div ref="mapContainer" class="w-full h-full map-container"></div>
+
+    <!-- Ваш Vue-попап -->
+    <EventPopup
+      v-if="selectedEvent"
+      :event="selectedEvent"
+      :style="popupStyle"
+      @close="selectedEvent = null"
+      @join="onJoin"
+    />
+
+    <!-- Модалка создания -->
+    <NewEventModal
+      v-if="showCreate"
+      :coords="[newEvent.latitude, newEvent.longitude]"
+      @created="onEventCreated"
+      @close="showCreate = false"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, defineProps } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import api from '@/api/axiosInstance'
-
-// Простая debounce-функция
-function debounce(fn, delay) {
-  let timeout
-  return function(...args) {
-    clearTimeout(timeout)
-    timeout = setTimeout(() => fn.apply(this, args), delay)
-  }
-}
+import EventPopup     from '@/components/Pages/EventsPage/EventPopup.vue'
+import NewEventModal  from '@/components/Pages/EventsPage/NewEventModal.vue'
+import api            from '@/api/axiosInstance'
+import { useRouter }  from 'vue-router'
 
 const props = defineProps({
-  center: { type: Array, default: () => [55.76, 37.64] },
-  zoom:   { type: Number, default: 10 }
+  center: { type: Array, default: () => [58.01,56.23] },
+  zoom:   { type: Number, default: 12 },
+  width:  { type: String, default: '100%' },
+  height: { type: String, default: '600px' }
 })
 
-const mapContainer = ref(null)
-let mapInstance = null
-const eventsOnMap = ref([])
+const router        = useRouter()
+const mapContainer  = ref(null)
+let   map           = null
+let   markers       = []
 
-const showCreate = ref(false)
-const newEvent = ref({
-  title: '',
-  type: '',
-  latitude: 0,
-  longitude: 0,
-  startTime: '',
-  endTime: '',
-  description: '',
-  address: '',
-  maxParticipants: null,
-  imageUrl: '',
-  category: '',
-  tags: ''
-})
+// события
+const eventsOnMap   = ref([])
+// поиск
+const query         = ref('')
+const suggestions   = ref([])
+let   searchAbort   = null
+// попап события
+const selectedEvent = ref(null)
+const popupPixel    = ref({ x:0, y:0 })
+// создание
+const showCreate    = ref(false)
+const newEvent      = reactive({ latitude:0, longitude:0 })
 
-// Загрузка событий по bbox
+// стиль Vue-попапа
+const popupStyle = computed(() => ({
+  position:  'absolute',
+  left:      `${popupPixel.value.x}px`,
+  top:       `${popupPixel.value.y}px`,
+  transform: 'translate(-50%,-100%)',
+  zIndex:    1000
+}))
+
+// загрузка
 async function loadEventsByBBox() {
-  if (!mapInstance) return
-  const b = mapInstance.getBounds()
-  const bbox = [
-    b.getSouth(), b.getWest(),
-    b.getNorth(), b.getEast()
-  ].join(',')
-  try {
-    const { data } = await api.get('/events', { params: { bbox } })
-    eventsOnMap.value = data.map(ev => ({
-      id: ev.id,
-      title: ev.title,
-      coords: [ev.latitude, ev.longitude],
-      imgUrl: ev.owner?.avatarUrl,
-      description: ev.description,
-      members: ev.members || []
-    }))
-    drawMarkers()
-  } catch (e) {
-    console.error('Ошибка загрузки событий:', e)
-  }
+  if (!map) return
+  const b    = map.getBounds()
+  const bbox = [b.getSouth(),b.getWest(),b.getNorth(),b.getEast()].join(',')
+  const { data } = await api.get('/events',{ params:{ bbox }})
+  eventsOnMap.value = data
+  drawMarkers()
 }
 
-// Отрисовка маркеров
-let markers = []
+// рисование
 function drawMarkers() {
-  markers.forEach(m => m.remove())
-  markers = []
-  eventsOnMap.value.forEach(ev => {
+  markers.forEach(m=>m.remove()); markers=[]
+  const mapW   = map.getContainer().clientWidth
+  const popupW = 300
+
+  eventsOnMap.value.forEach(ev=>{
     const el = document.createElement('div')
-    el.className = 'rounded-full overflow-hidden border-2 border-white shadow-lg cursor-pointer'
-    el.style.width = '40px'; el.style.height = '40px'
+    el.className = 'marker-class w-[40px] h-[40px] rounded-full border-2 border-white shadow-lg cursor-pointer'
+    el.style.transform='translate(-20px,-20px)'
+
+    // картинка
     const img = document.createElement('img')
-    img.src = ev.imgUrl
-    img.alt = ev.title
-    img.style.width = '100%'; img.style.height = '100%'
+    const url = ev.imageUrl?.startsWith('http')
+      ? ev.imageUrl
+      : `${import.meta.env.VITE_API_URL||''}${ev.imageUrl}`
+    img.src = url || '/images/default-event.png'
+    img.style.width=img.style.height='100%'
     el.appendChild(img)
+
     const marker = new maplibregl.Marker({ element: el })
-      .setLngLat([ev.coords[1], ev.coords[0]])
-      .setPopup(new maplibregl.Popup({ offset: 25 })
-        .setHTML(`<strong>${ev.title}</strong><br>${ev.description || ''}`))
-      .addTo(mapInstance)
+      .setLngLat([ev.longitude,ev.latitude])
+      .addTo(map)
     markers.push(marker)
+
+    el.addEventListener('click', e=>{
+      e.stopPropagation()
+      const pt = map.project([ev.longitude,ev.latitude])
+      let x = pt.x
+      if (x < popupW/2)           x = popupW/2
+      else if (x + popupW/2 > mapW) x = mapW - popupW/2
+
+      popupPixel.value    = { x, y:pt.y }
+      selectedEvent.value = ev
+    })
   })
 }
 
-// Создание события по клику
-function onMapClick(e) {
-  newEvent.value.latitude = e.lngLat.lat
-  newEvent.value.longitude = e.lngLat.lng
-  showCreate.value = true
-}
-
-// Сабмит формы
-async function submitEvent() {
-  try {
-    const payload = { ...newEvent.value }
-    if (payload.tags) payload.tags = payload.tags.split(',').map(t => t.trim())
-    await api.post('/events', payload)
-    showCreate.value = false
-    loadEventsByBBox()
-  } catch (e) {
-    console.error('Ошибка создания события:', e)
-    alert('Не удалось создать событие')
+// клик по карте
+function handleMapClick(e) {
+  if (selectedEvent.value) {
+    selectedEvent.value = null
+  } else {
+    newEvent.latitude  = e.lngLat.lat
+    newEvent.longitude = e.lngLat.lng
+    showCreate.value   = true
   }
 }
 
-onMounted(() => {
-  mapInstance = new maplibregl.Map({
+// создано
+function onEventCreated() {
+  showCreate.value = false
+  loadEventsByBBox()
+}
+
+// вступить
+async function onJoin(id) {
+  try {
+    await api.post(`/events/${id}/join`)
+    router.push('/my-events')
+  } catch (err) {
+    alert(err.response?.data?.message||'Ошибка при вступлении')
+  }
+}
+
+// поиск
+async function doSearch() {
+  const q = query.value.trim()
+  if (!q) { suggestions.value = []; return }
+  searchAbort && searchAbort.abort()
+  const ctrl = new AbortController(); searchAbort = ctrl
+  try {
+    const resp = await api.get('/geocode', {
+      params:{ city: q, limit:5 },
+      signal: ctrl.signal
+    })
+    suggestions.value = resp.data   // ожидаем массив подсказок
+  } catch(err) {
+    if (err.name!=='CanceledError') console.error(err)
+  }
+}
+function onQueryChange() {
+  if (!query.value) suggestions.value=[]
+}
+function selectSuggestion(item) {
+  suggestions.value = []
+  query.value       = item.display_name
+  const lat = parseFloat(item.lat)
+  const lon = parseFloat(item.lon)
+  map.flyTo({ center:[lon,lat], zoom:14 })
+}
+
+// lifecycle
+onMounted(()=>{
+  map = new maplibregl.Map({
     container: mapContainer.value,
     style: {
-      version: 8,
-      sources: {
-        'osm-tiles': {
-          type: 'raster',
-          tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
-          tileSize: 256,
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }
-      },
-      layers: [
-        {
-          id: 'osm-tiles',
-          type: 'raster',
-          source: 'osm-tiles'
-        }
-      ]
+      version:8,
+      sources:{ 'osm-tiles': {
+        type:'raster',
+        tiles:['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
+        tileSize:256
+      }},
+      layers:[{ id:'osm-tiles',type:'raster',source:'osm-tiles' }]
     },
-    center: [props.center[1], props.center[0]],
+    center:[props.center[1],props.center[0]],
     zoom: props.zoom
   })
-  mapInstance.addControl(new maplibregl.NavigationControl(), 'top-left')
-  mapInstance.on('load', loadEventsByBBox)
-  mapInstance.on('moveend', debounce(loadEventsByBBox, 500))
-  mapInstance.on('click', onMapClick)
+  map.addControl(new maplibregl.NavigationControl(),'top-left')
+  map.addControl(new maplibregl.FullscreenControl(),'top-left')
+  map.addControl(new maplibregl.GeolocateControl({ trackUserLocation:true }),'top-left')
+
+  map.on('load',    loadEventsByBBox)
+  map.on('moveend', loadEventsByBBox)
+  map.on('move',    ()=>{
+    if (selectedEvent.value) {
+      const pt = map.project([selectedEvent.value.longitude,selectedEvent.value.latitude])
+      popupPixel.value = { x:pt.x, y:pt.y }
+    }
+  })
+  map.on('click', handleMapClick)
 })
 
-onBeforeUnmount(() => {
-  markers.forEach(m => m.remove())
-  if (mapInstance) mapInstance.remove()
+onBeforeUnmount(()=>{
+  markers.forEach(m=>m.remove())
+  map && map.remove()
 })
 </script>
 
 <style scoped>
-.events-map { }
+.map-container {
+  position: relative;
+  overflow: hidden;
+}
+/* Поисковые подсказки */
+.absolute ul { z-index:9998; }
+/* Скрываем дефолтный popup MapLibre */
+.mapboxgl-popup { display:none !important; }
+/* Стили маркера */
+.marker-class { position:absolute; }
 </style>

@@ -1,146 +1,189 @@
+<!-- File: src/components/AppHeader.vue -->
 <template>
   <header class="sticky top-0 w-full bg-headerImage bg-no-repeat bg-cover bg-center z-50">
-    <!-- Десктопная шапка -->
+    <!-- Десктоп -->
     <div class="hidden xl:flex items-center justify-between h-24 px-8 relative">
-      <!-- Левое меню -->
       <nav class="flex items-center space-x-8 text-sm font-normal">
         <NavLink to="/">главная</NavLink>
         <NavLink to="/destinations">направления</NavLink>
-        <NavLink to="/experiences">впечатления</NavLink>
-        <!-- Dropdown «поездки» -->
-        <div ref="dropdownRef" class="relative" @keydown.esc="menuOpen = false">
+
+        <!-- Experiences dropdown -->
+        <div ref="expRef" class="relative" @keydown.esc="experiencesOpen = false">
           <button
-            @click="toggleMenu"
+            @click="toggleExperiences"
             class="flex items-center space-x-1 focus:outline-none"
             aria-haspopup="true"
-            :aria-expanded="menuOpen"
+            :aria-expanded="experiencesOpen"
+          >
+            <span>впечатления</span>
+            <svg
+              class="w-3 h-3 transform transition-transform duration-200"
+              :class="{ 'rotate-180': experiencesOpen }"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path fill-rule="evenodd"
+                d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 
+                   0 111.08 1.04l-4.25 4.5a.75.75 
+                   0 01-1.08 0l-4.25-4.5a.75.75 
+                   0 01.02-1.06z"
+                clip-rule="evenodd"/>
+            </svg>
+          </button>
+          <ul
+            v-show="experiencesOpen"
+            class="absolute right-0 mt-2 w-48 bg-white border border-gray-300 shadow-lg rounded-md z-50"
+            role="menu"
+            aria-label="Меню впечатлений"
+          >
+            <li @click="goTo('/events')" class="menu-item" role="menuitem">
+              события
+            </li>
+            <li @click="goTo('/excursions')" class="menu-item" role="menuitem">
+              экскурсии
+            </li>
+            <li
+              v-if="authStore.isAuthenticated"
+              @click="goTo('/my-events')"
+              class="menu-item"
+              role="menuitem"
+            >
+              мои события
+            </li>
+          </ul>
+        </div>
+
+        <!-- Trips dropdown (ваш старый) -->
+        <div ref="tripRef" class="relative" @keydown.esc="tripsOpen = false">
+          <button
+            @click="toggleTrips"
+            class="flex items-center space-x-1 focus:outline-none"
+            aria-haspopup="true"
+            :aria-expanded="tripsOpen"
           >
             <span>поездки</span>
             <svg
               class="w-3 h-3 transform transition-transform duration-200"
-              :class="{ 'rotate-180': menuOpen }"
-              fill="currentColor"
-              viewBox="0 0 20 20"
+              :class="{ 'rotate-180': tripsOpen }"
+              fill="currentColor" viewBox="0 0 20 20"
             >
-              <path
-                fill-rule="evenodd"
-                d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                clip-rule="evenodd"
-              />
+              <path fill-rule="evenodd"
+                d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 
+                   0 111.08 1.04l-4.25 4.5a.75.75 
+                   0 01-1.08 0l-4.25-4.5a.75.75 
+                   0 01.02-1.06z"
+                clip-rule="evenodd"/>
             </svg>
           </button>
           <ul
-            v-show="menuOpen"
+            v-show="tripsOpen"
             class="absolute right-0 mt-2 w-40 bg-white border border-gray-300 shadow-lg rounded-md z-50"
             role="menu"
             aria-label="Меню поездок"
           >
             <li
               v-if="authStore.isAuthenticated && isDriver"
-              class="menu-item"
-              role="menuitem"
               @click="goTo('/create-trip')"
-            >создать</li>
-            <li
               class="menu-item"
-              role="menuitem"
-              @click="goTo('/find-trip')"
-            >найти</li>
+            >
+              создать
+            </li>
+            <li @click="goTo('/find-trip')" class="menu-item">найти</li>
             <li
               v-if="authStore.isAuthenticated"
-              class="menu-item"
-              role="menuitem"
               @click="goTo('/bookings')"
-            >актуальные</li>
+              class="menu-item"
+            >
+              актуальные
+            </li>
           </ul>
         </div>
       </nav>
 
-      <!-- Логотип по центру -->
+      <!-- Лого -->
       <NavLink
         to="/"
         class="absolute left-1/2 transform -translate-x-1/2 text-6xl font-black opacity-80"
-      >
-        uralgo
-      </NavLink>
+      >uralgo</NavLink>
 
-      <!-- Кнопка «войти» или имя пользователя -->
-      <div
-        class="border border-black border-opacity-15 bg-white bg-opacity-40 px-4 py-2 rounded-full flex items-center justify-center z-15"
-      >
+      <!-- Аккаунт -->
+      <div class="border border-black border-opacity-15 bg-white bg-opacity-40 px-4 py-2 rounded-full flex items-center z-15">
         <template v-if="authStore.isAuthenticated && authStore.user">
           <NavLink to="/account" class="flex items-center focus:outline-none">
-            <img
-              :src="userAvatar"
-              alt="Аватар пользователя"
-              class="w-8 h-8 rounded-full object-cover mr-2"
-              loading="lazy"
-            />
-            <span class="font-bold text-md opacity-90">
-              {{ authStore.user.fullName }}
-            </span>
+            <img :src="userAvatar" alt="Аватар" class="w-8 h-8 rounded-full mr-2"/>
+            <span class="font-bold">{{ authStore.user.fullName }}</span>
           </NavLink>
         </template>
         <template v-else>
-          <NavLink to="/login" class="font-bold text-md opacity-90 focus:outline-none">
-            войти
-          </NavLink>
+          <NavLink to="/login" class="font-bold focus:outline-none">войти</NavLink>
         </template>
       </div>
     </div>
 
-    <!-- Мобильная шапка -->
+    <!-- Мобилка -->
     <div class="xl:hidden flex items-center justify-between h-12 px-4 relative">
-      <!-- Логотип слева -->
       <NavLink to="/" class="text-2xl font-black">uralgo</NavLink>
-
       <div class="flex items-center space-x-4">
-        <!-- Кнопка входа / аватар -->
-        <div>
-          <template v-if="authStore.isAuthenticated && authStore.user">
-            <NavLink to="/account" class="focus:outline-none">
-              <img
-                :src="userAvatar"
-                alt="Аватар"
-                class="w-8 h-8 rounded-full object-cover"
-                loading="lazy"
-              />
-            </NavLink>
-          </template>
-          <template v-else>
-            <NavLink to="/login" class="font-bold text-md opacity-90 focus:outline-none">
-              войти
-            </NavLink>
-          </template>
-        </div>
-
-        <!-- Бургер -->
+        <template v-if="authStore.isAuthenticated && authStore.user">
+          <NavLink to="/account">
+            <img :src="userAvatar" alt="Аватар" class="w-8 h-8 rounded-full"/>
+          </NavLink>
+        </template>
+        <template v-else>
+          <NavLink to="/login" class="font-bold">войти</NavLink>
+        </template>
         <button
-          @click="toggleMobileMenu"
+          @click="mobileMenuOpen = !mobileMenuOpen"
           class="focus:outline-none transform transition-transform duration-200"
           :class="{ 'rotate-90': mobileMenuOpen }"
-          aria-label="Открыть меню"
-          :aria-expanded="mobileMenuOpen"
         >
-          <img src="/images/burgerIcon.svg" alt="Меню" class="w-8 h-8" loading="lazy" />
+          <img src="/images/burgerIcon.svg" alt="Меню" class="w-8 h-8"/>
         </button>
       </div>
     </div>
 
-    <!-- Мобильное меню -->
     <transition name="slide-down">
-      <div
-        v-show="mobileMenuOpen"
-        class="xl:hidden bg-white shadow-md"
-        role="menu"
-        aria-label="Мобильное меню"
-      >
+      <div v-show="mobileMenuOpen" class="xl:hidden bg-white shadow-md">
         <nav class="flex flex-col p-4 space-y-2">
           <NavLink to="/">главная</NavLink>
           <NavLink to="/destinations">направления</NavLink>
-          <NavLink to="/experiences">впечатления</NavLink>
-          <NavLink v-if="isDriver" to="/create-trip">создать поездку</NavLink>
+
+          <!-- мобильный dropdown впечатлений -->
+          <div>
+            <button
+              @click="expMobileOpen = !expMobileOpen"
+              class="w-full flex justify-between items-center py-1"
+            >
+              впечатления
+              <svg
+                class="w-4 h-4 transform transition-transform"
+                :class="{ 'rotate-180': expMobileOpen }"
+                fill="currentColor" viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 
+                     0 111.08 1.04l-4.25 4.5a.75.75 
+                     0 01-1.08 0l-4.25-4.5a.75.75 
+                     0 01.02-1.06z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </button>
+            <ul v-show="expMobileOpen" class="pl-4">
+              <li @click="goTo('/events')" class="py-1">события</li>
+              <li @click="goTo('/excursions')" class="py-1">экскурсии</li>
+              <li
+                v-if="authStore.isAuthenticated"
+                @click="goTo('/my-events')"
+                class="py-1"
+              >мои события</li>
+            </ul>
+          </div>
+
+          <!-- поездки -->
           <NavLink to="/find-trip">найти поездку</NavLink>
+          <NavLink v-if="authStore.isAuthenticated && isDriver" to="/create-trip">создать поездку</NavLink>
           <NavLink v-if="authStore.isAuthenticated" to="/bookings">актуальные бронирования</NavLink>
         </nav>
       </div>
@@ -150,25 +193,30 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/store/authStore'
-import NavLink from '@/components/buttons/NavLink.vue'
-import defaultAvatar from '@/assets/images/default-avatar.svg'
+import { useRouter }     from 'vue-router'
+import { useAuthStore }  from '@/store/authStore'
+import NavLink           from '@/components/buttons/NavLink.vue'
+import defaultAvatar     from '@/assets/images/default-avatar.svg'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
-const menuOpen = ref(false)
-const mobileMenuOpen = ref(false)
-const dropdownRef = ref(null)
+// desktop dropdowns
+const experiencesOpen = ref(false)
+const tripsOpen       = ref(false)
+// mobile
+const mobileMenuOpen  = ref(false)
+const expMobileOpen   = ref(false)
 
-// Проверяем роль водителя
+// refs для клика вне
+const expRef  = ref(null)
+const tripRef = ref(null)
+
 const isDriver = computed(
-  () => authStore.isAuthenticated && authStore.user?.roles?.some(r => r.name === 'Driver')
+  () => authStore.isAuthenticated && authStore.user?.roles?.some(r=>r.name==='Driver')
 )
 
-// Формируем URL аватара или используем дефолт
-const baseUrl = import.meta.env.VITE_API_URL || ''
+const baseUrl    = import.meta.env.VITE_API_URL || ''
 const userAvatar = computed(() => {
   const photo = authStore.user?.photoUrl
   return authStore.isAuthenticated && photo
@@ -176,46 +224,41 @@ const userAvatar = computed(() => {
     : defaultAvatar
 })
 
-function toggleMenu() {
-  menuOpen.value = !menuOpen.value
+function toggleExperiences() {
+  experiencesOpen.value = !experiencesOpen.value
+  tripsOpen.value       = false
 }
-
-function toggleMobileMenu() {
-  mobileMenuOpen.value = !mobileMenuOpen.value
+function toggleTrips() {
+  tripsOpen.value       = !tripsOpen.value
+  experiencesOpen.value = false
 }
-
 function goTo(path) {
-  menuOpen.value = false
-  mobileMenuOpen.value = false
+  experiencesOpen.value = tripsOpen.value = false
+  mobileMenuOpen.value = expMobileOpen.value = false
   router.push(path)
 }
 
 function handleClickOutside(e) {
-  if (dropdownRef.value && !dropdownRef.value.contains(e.target)) {
-    menuOpen.value = false
+  if (expRef.value && !expRef.value.contains(e.target)) {
+    experiencesOpen.value = false
+  }
+  if (tripRef.value && !tripRef.value.contains(e.target)) {
+    tripsOpen.value = false
   }
 }
 
-function handleScroll() {
-  menuOpen.value = false
-}
-
-onMounted(async () => {
+onMounted(async ()=>{
   document.addEventListener('click', handleClickOutside)
-  window.addEventListener('scroll', handleScroll)
-
+  window.addEventListener('scroll', handleClickOutside)
+  // загрузка профиля, если надо
   if (authStore.token && !authStore.user) {
-    try {
-      await authStore.fetchProfile()
-    } catch {
-      authStore.logout()
-    }
+    try { await authStore.fetchProfile() }
+    catch { authStore.logout() }
   }
 })
-
-onBeforeUnmount(() => {
+onBeforeUnmount(()=>{
   document.removeEventListener('click', handleClickOutside)
-  window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('scroll', handleClickOutside)
 })
 </script>
 
@@ -223,7 +266,6 @@ onBeforeUnmount(() => {
 .menu-item {
   padding: 10px 15px;
   cursor: pointer;
-  text-align: left;
   border-bottom: 1px solid rgba(0,0,0,0.15);
 }
 .menu-item:last-child {
@@ -238,8 +280,7 @@ onBeforeUnmount(() => {
 }
 .slide-down-enter-from,
 .slide-down-leave-to {
-  max-height: 0;
-  overflow: hidden;
+  max-height: 0; overflow: hidden;
 }
 .slide-down-enter-to,
 .slide-down-leave-from {
