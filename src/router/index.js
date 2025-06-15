@@ -17,6 +17,7 @@ const Booking     = () => import('@/pages/Booking.vue')
 const MyEventsPage  = () => import('@/pages/MyEventsPage.vue')
 const MyTripsPage  = () => import('@/pages/MyTripsPage.vue')
 const EventChatPage = () => import('@/pages/EventChatPage.vue')
+const TripChatPage = () => import('@/pages/TripChatPage.vue')
 
 const routes = [
   {
@@ -90,6 +91,12 @@ const routes = [
     name: 'event-chat',
     component: EventChatPage,
     meta: { requiresAuth: true, title: 'Чат события' }
+  },
+  {
+    path: '/trips/:id/chat',
+    name: 'trip-chat',
+    component: TripChatPage,
+    meta: { requiresAuth: true, title: 'Чат поездки' }
   },
   // 404
   {
