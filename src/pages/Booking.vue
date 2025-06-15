@@ -108,8 +108,9 @@ async function cancel(id) {
       const err = await res.json()
       throw new Error(err.message || 'Ошибка при отмене')
     }
-    alert('Бронирование отменено')
     await fetchBookings()
+
+   window.alert('Бронирование успешно отменено')
   } catch (err) {
     alert(err.message)
   }

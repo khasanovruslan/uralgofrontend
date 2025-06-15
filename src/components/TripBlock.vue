@@ -1,3 +1,4 @@
+<!-- File: src/components/TripBlock.vue -->
 <template>
   <div class="xl:flex justify-center mt-5">
     <div
@@ -12,24 +13,28 @@
           class="w-12 h-12 rounded-full object-cover"
         />
         <div class="flex flex-col">
-          <!-- Маршрут -->
+          <!-- Маршрут: показываем лишь первые два сегмента -->
           <div class="flex items-center text-[24px] font-semibold tracking-wide">
-            <p class="mr-3">{{ trip.origin }}</p>
+            <p class="mr-3">{{ shortOrigin }}</p>
             <img src="/images/fromToArrow.svg" alt="→" class="mr-3" />
-            <p>{{ trip.destination }}</p>
+            <p>{{ shortDestination }}</p>
           </div>
+
           <!-- Имя водителя -->
           <p class="mt-2 text-[18px] font-medium text-gray-700">
             {{ trip.creator.fullName }}
           </p>
+
           <!-- Дата и время -->
           <p class="mt-1 text-[16px] font-light text-gray-600">
             {{ formatDate(trip.departureTime) }}
           </p>
+
           <!-- Свободные места -->
           <p class="mt-1 text-[16px] font-light text-gray-600">
             Свободных мест: {{ trip.seats }}
           </p>
+
           <!-- Описание поездки, если есть -->
           <p v-if="trip.description" class="mt-1 text-[14px] text-gray-500">
             {{ trip.description }}
@@ -63,28 +68,42 @@ const props = defineProps({
   trip: { type: Object, required: true }
 })
 
-// Базовый URL для изображений (API)
 const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
-// Источник аватара с заглушкой
+// Аватар водителя
 const avatarSrc = computed(() =>
   props.trip.creator.photoUrl
     ? `${baseUrl}${props.trip.creator.photoUrl}`
     : '/images/default-avatar.svg'
 )
 
-// Форматированная цена с двумя знаками после точки
+// Форматируем цену
 const formattedPrice = computed(() => {
   const p = Number(props.trip.price)
   return isNaN(p) ? '0.00' : p.toFixed(2)
 })
 
-// Форматирование даты и времени
+// Отображать только первые два сегмента строки
+function shortText(str) {
+  return (str || '')
+    .split(',')
+    .slice(0, 1)
+    .map(s => s.trim())
+    .join(', ')
+}
+
+const shortOrigin = computed(() => shortText(props.trip.origin))
+const shortDestination = computed(() => shortText(props.trip.destination))
+
+// Формат даты и времени
 function formatDate(dt) {
   const d = new Date(dt)
   return d.toLocaleString('ru-RU', {
-    year: 'numeric', month: 'long', day: 'numeric',
-    hour: '2-digit', minute: '2-digit'
+    year:   'numeric',
+    month:  'long',
+    day:    'numeric',
+    hour:   '2-digit',
+    minute: '2-digit'
   })
 }
 </script>

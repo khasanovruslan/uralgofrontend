@@ -10,8 +10,8 @@
       <div class="h-64 mb-4">
         <RouteMapMapLibre
           v-if="originCoords && destinationCoords"
-          :origin="[originCoords.lat, originCoords.lng]"
-          :destination="[destinationCoords.lat, destinationCoords.lng]"
+          :origin="originCoords"
+          :destination="destinationCoords"
           width="100%"
           height="100%"
         />
@@ -89,13 +89,18 @@ const canReserve      = computed(() =>
   props.trip.allowBooking
 )
 
+
 async function loadCoords() {
   try {
-    originCoords.value      = await geocodeCity(props.trip.origin)
-    destinationCoords.value = await geocodeCity(props.trip.destination)
+  const oRes = await geocodeCity(props.trip.origin)    // oRes = [{ lat, lon, …}, …]
+   const dRes = await geocodeCity(props.trip.destination)
+   if (!Array.isArray(oRes) || !oRes.length || !Array.isArray(dRes) || !dRes.length) {
+     throw new Error('не удалось получить координаты')
+   }
+   originCoords.value      = [ parseFloat(oRes[0].lat), parseFloat(oRes[0].lon) ]
+   destinationCoords.value = [ parseFloat(dRes[0].lat), parseFloat(dRes[0].lon) ]
   } catch (err) {
-    console.error('Геокодинг не удался:', err)
-    originCoords.value = destinationCoords.value = null
+    console.error(err)
   }
 }
 
