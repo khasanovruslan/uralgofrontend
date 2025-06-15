@@ -38,9 +38,9 @@
             <li @click="goTo('/destinations')" class="menu-item" role="menuitem">
               направления
             </li>
-            <li @click="goTo('/excursions')" class="menu-item" role="menuitem">
+            <!-- <li @click="goTo('/excursions')" class="menu-item" role="menuitem">
               экскурсии
-            </li>
+            </li> -->
             <li @click="goTo('/events')" class="menu-item" role="menuitem">
               события
             </li>

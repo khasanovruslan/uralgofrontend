@@ -1,22 +1,23 @@
 <template>
-    <div class="base-input relative flex flex-col">
-      <label v-if="label"
-        class="absolute px-2 bg-white top-0 left-[10%] transform -translate-y-1/2"
-      >
-        {{ label }}
-      </label>
-      <input
-        class="w-[360px] h-[48px] border-black border-[1px] rounded-[55px] pl-[20px] pr-[20px] text-[16px] font-[600]"
-        :type="type"
-        :placeholder="placeholder"
-        v-model="localValue"
-        @blur="onBlur"
-        @input="onInput"
-      />
-      <img src="@/assets/icons/InputIcon.png" class="w-[34px] absolute top-[50%] left-[85%] transform -translate-y-1/2" alt="">
-      <div v-if="errorMessage" class="error-message mt-2">{{ errorMessage }}</div>
-    </div>
-  </template>
+  <div class="base-input relative flex flex-col w-full">
+    <label
+      v-if="label"
+      class="absolute px-2 bg-white top-0 left-4 transform -translate-y-1/2 text-gray-700 text-sm"
+    >
+      {{ label }}
+    </label>
+    <input
+      class="w-full h-12 border border-gray-300 rounded-full pl-5 pr-5 text-base font-medium focus:border-blue-400 transition"
+      :type="type"
+      :placeholder="placeholder"
+      v-model="localValue"
+      @blur="onBlur"
+      @input="onInput"
+    />
+    <div v-if="errorMessage" class="text-red-500 text-sm mt-1">{{ errorMessage }}</div>
+  </div>
+</template>
+
   
   
   <script setup>

@@ -25,6 +25,7 @@
       @refresh="fetch"
     />
   </div>
+  <div class="h-[400px]"><!-- отступ снизу --></div>
 </template>
 
 <script setup>
