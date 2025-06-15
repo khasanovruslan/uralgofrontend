@@ -15,6 +15,7 @@ const Events  = () => import('@/pages/Events.vue')
 const NotFound     = () => import('@/pages/NotFound.vue')
 const Booking     = () => import('@/pages/Booking.vue')
 const MyEventsPage  = () => import('@/pages/MyEventsPage.vue')
+const MyTripsPage  = () => import('@/pages/MyTripsPage.vue')
 const EventChatPage = () => import('@/pages/EventChatPage.vue')
 
 const routes = [
@@ -96,7 +97,13 @@ const routes = [
     name: 'not-found',
     component: NotFound,
     meta: { hideNavigation: true, title: 'Страница не найдена' }
-  }
+  },
+  {
+    path: '/my-trips',
+    name: 'my-trips',
+    component: MyTripsPage,
+    meta: { requiresAuth: true, title: 'Мои поездки' }
+  },
 ]
 
 const router = createRouter({

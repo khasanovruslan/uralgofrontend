@@ -133,7 +133,7 @@ async function reserve() {
       'Вы успешно забронировали поездку! Перейти в «Актуальные бронирования»?'
     )
     if (go) {
-      router.push('/bookings')  // адаптируйте путь под ваш роут
+      router.push('/my-trips')  // адаптируйте путь под ваш роут
     }
   } catch (err) {
     alert(err.message)

@@ -93,7 +93,7 @@
             <li @click="goTo('/find-trip')" class="menu-item">найти</li>
             <li
               v-if="authStore.isAuthenticated"
-              @click="goTo('/bookings')"
+              @click="goTo('/my-trips')"
               class="menu-item"
             >
               актуальные
@@ -186,7 +186,7 @@
           <!-- поездки -->
           <NavLink to="/find-trip">найти поездку</NavLink>
           <NavLink v-if="authStore.isAuthenticated && isDriver" to="/create-trip">создать поездку</NavLink>
-          <NavLink v-if="authStore.isAuthenticated" to="/bookings">актуальные бронирования</NavLink>
+          <NavLink v-if="authStore.isAuthenticated" to="/my-trips">актуальные бронирования</NavLink>
         </nav>
       </div>
     </transition>
