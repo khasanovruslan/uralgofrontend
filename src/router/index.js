@@ -100,18 +100,28 @@ const routes = [
     component: TripChatPage,
     meta: { requiresAuth: true, title: 'Чат поездки' }
   },
-  // 404
-  {
-    path: '/:pathMatch(.*)*',
-    name: 'not-found',
-    component: NotFound,
-    meta: { hideNavigation: true, title: 'Страница не найдена' }
-  },
   {
     path: '/my-trips',
     name: 'my-trips',
     component: MyTripsPage,
     meta: { requiresAuth: true, title: 'Мои поездки' }
+  },
+  {
+  path: '/admin',
+  component: () => import('@/layouts/AdminLayout.vue'),
+  meta: { requiresAuth: true, requiresAdmin: true },
+  children: [
+    { path: 'users',    component: () => import('@/pages/admin/AdminUsers.vue'),    meta: { title: 'Пользователи' } },
+    { path: 'trips',    component: () => import('@/pages/admin/AdminTrips.vue'),    meta: { title: 'Поездки' } },
+    { path: 'events',   component: () => import('@/pages/admin/AdminEvents.vue'),   meta: { title: 'События' } },
+    { path: 'bookings', component: () => import('@/pages/admin/AdminBookings.vue'), meta: { title: 'Бронирования' } },
+  ]
+},
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    component: NotFound,
+    meta: { hideNavigation: true, title: 'Страница не найдена' }
   },
 ]
 
@@ -129,32 +139,49 @@ const router = createRouter({
 })
 
 // Глобальный guard
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
-  // Устанавливаем заголовок страницы
-  if (to.meta?.title) {
-    document.title = `${to.meta.title} — UralGo`
+  // Если у нас есть токен, но нет загруженного user — подгружаем профиль
+  if (authStore.token && !authStore.user) {
+    try {
+      await authStore.fetchProfile()
+    } catch (err) {
+      // сбросить состояние, если refresh-токен просрочен
+      authStore.logout()
+      return next({ name: 'login' })
+    }
   }
 
-  // Защита auth-only маршрутов
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+  // ——————————————————————————————————————————————————————————
+  // проверка на любые requiresAuth
+  if (to.matched.some(r => r.meta.requiresAuth) && !authStore.isAuthenticated) {
     return next({ name: 'login', query: { redirect: to.fullPath } })
   }
 
-  // Защита от входа зарегистрированных на страницы входа/регистрации
+  // запрещённый доступ к логину/регистрации, если уже в системе
   if ((to.name === 'login' || to.name === 'register') && authStore.isAuthenticated) {
     return next({ name: 'home' })
   }
 
-  if (to.meta.requiresDriver) {
-    const roles = authStore.user?.roles?.map(r => r.name) || [];
+  // проверка роли Driver
+  if (to.matched.some(r => r.meta.requiresDriver)) {
+    const roles = authStore.user?.roles?.map(r => r.name) || []
     if (!roles.includes('Driver')) {
-      // Можно заменить на redirect куда угодно
-      return next({ name: 'home' });
+      return next({ name: 'home' })
     }
   }
 
+  // ——— НОВЫЙ БЛОК: проверка на Admin ——————
+  if (to.matched.some(r => r.meta.requiresAdmin)) {
+    const roles = authStore.user?.roles?.map(r => r.name) || []
+    if (!roles.includes('Admin')) {
+      return next({ name: 'home' })
+    }
+  }
+  // ——————————————————————————————————————————————————————————
+
+  // всё ок
   next()
 })
 

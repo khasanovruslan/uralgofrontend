@@ -1,4 +1,4 @@
-<!-- File: src/components/AppHeader.vue -->
+<!-- File: src/components/SiteNavigation.vue -->
 <template>
   <header class="sticky top-0 w-full bg-headerImage bg-no-repeat bg-cover bg-center z-50">
     <!-- Десктоп -->
