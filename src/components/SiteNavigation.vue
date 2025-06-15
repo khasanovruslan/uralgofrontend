@@ -5,7 +5,6 @@
     <div class="hidden xl:flex items-center justify-between h-24 px-8 relative">
       <nav class="flex items-center space-x-8 text-sm font-normal">
         <NavLink to="/">главная</NavLink>
-        <NavLink to="/destinations">направления</NavLink>
 
         <!-- Experiences dropdown -->
         <div ref="expRef" class="relative" @keydown.esc="experiencesOpen = false">
@@ -36,11 +35,14 @@
             role="menu"
             aria-label="Меню впечатлений"
           >
-            <li @click="goTo('/events')" class="menu-item" role="menuitem">
-              события
+            <li @click="goTo('/destinations')" class="menu-item" role="menuitem">
+              направления
             </li>
             <li @click="goTo('/excursions')" class="menu-item" role="menuitem">
               экскурсии
+            </li>
+            <li @click="goTo('/events')" class="menu-item" role="menuitem">
+              события
             </li>
             <li
               v-if="authStore.isAuthenticated"

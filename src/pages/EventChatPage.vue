@@ -1,11 +1,27 @@
+<!-- File: src/pages/EventChatPage.vue -->
 <template>
-  <div class="p-6">
-    <h1 class="text-2xl mb-4">Чат события</h1>
-    <div class="border rounded h-96 overflow-auto p-4 space-y-3">
-      <div v-for="msg in messages" :key="msg.id">
-        <strong>{{ msg.user.fullName }}:</strong> {{ msg.text }}
+  <div class="p-6 flex flex-col h-[60vh]">
+    <!-- Хедер с кнопкой Назад и заголовком -->
+    <div class="flex items-center justify-between mb-4">
+      <button @click="goBack" class="text-blue-600 hover:underline flex items-center">
+        ← Мои события
+      </button>
+      <h1 class="text-2xl font-bold">Чат: {{ eventTitle || '...' }}</h1>
+      <span style="width: 4rem"></span>
+    </div>
+
+    <!-- Скроллируемый контейнер с сообщениями -->
+    <div
+      ref="messagesContainer"
+      class="flex-1 border rounded overflow-y-auto p-4 space-y-3 bg-gray-50"
+    >
+      <div v-for="msg in messages" :key="msg.id" class="flex space-x-2">
+        <strong>{{ msg.user.fullName }}:</strong>
+        <span>{{ msg.text }}</span>
       </div>
     </div>
+
+    <!-- Ввод и кнопка отправки -->
     <div class="mt-4 flex">
       <input
         v-model="text"
@@ -13,7 +29,10 @@
         class="flex-1 border rounded px-3 py-2"
         placeholder="Сообщение…"
       />
-      <button class="ml-2 px-4 bg-green-600 text-white rounded" @click="send">
+      <button
+        @click="send"
+        class="ml-2 px-4 bg-green-600 hover:bg-green-700 text-white rounded"
+      >
         Отправить
       </button>
     </div>
@@ -21,25 +40,66 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import api from '@/api/axiosInstance'
-import { useRoute } from 'vue-router'
 
 const route = useRoute()
-const chatId = route.params.id
-const messages = ref([])
-const text     = ref('')
+const router = useRouter()
+const eventId = route.params.id
+
+const eventTitle = ref('')
+const messages   = ref([])
+const text       = ref('')
+const messagesContainer = ref(null)
 
 async function load() {
-  const { data } = await api.get(`/events/${chatId}/chat`)
-  messages.value = data.messages
+  // Получаем название события
+  try {
+    const { data: ev } = await api.get(`/events/${eventId}`)
+    eventTitle.value = ev.title
+  } catch {
+    eventTitle.value = ''
+  }
+  // Получаем все сообщения чата
+  try {
+    const { data: chat } = await api.get(`/events/${eventId}/chat`)
+    messages.value = chat.messages
+    // после обновления DOM прокручиваем вниз
+    await nextTick()
+    const c = messagesContainer.value
+    if (c) c.scrollTop = c.scrollHeight
+  } catch (e) {
+    console.error(e)
+  }
 }
+
 async function send() {
   if (!text.value.trim()) return
-  await api.post(`/events/${chatId}/chat/messages`, { text: text.value })
-  text.value = ''
-  await load()
+  try {
+    await api.post(`/events/${eventId}/chat/messages`, { text: text.value.trim() })
+    text.value = ''
+    await load()
+  } catch (e) {
+    console.error(e)
+    alert(e.response?.data?.message || 'Не удалось отправить сообщение')
+  }
+}
+
+function goBack() {
+  router.push('/my-events')
 }
 
 onMounted(load)
 </script>
+
+<style scoped>
+/* optional: более тонкая полоса прокрутки */
+.flex-1::-webkit-scrollbar {
+  width: 6px;
+}
+.flex-1::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.2);
+  border-radius: 3px;
+}
+</style>

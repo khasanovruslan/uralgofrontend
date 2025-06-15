@@ -17,7 +17,7 @@
                      18 трасс протяжённостью от 100 до 2600<br>
                      метров с максимальным перепадом высот 310 метров."
         img="/images/destinations/gubaha1.svg"
-        @action="createTripRedirecting"
+        @action="findTripRedirecting"
       />
   
       <!-- Type1: Свердловская область -->
@@ -32,7 +32,7 @@
         title="Любимые места..."
         description='жителей Урала можете найти в "Поездках"'
         img="/images/destinations/Frame202.jpg"
-        @action="createTripRedirecting"
+        @action="findTripRedirecting"
       />
   
       <!-- Type3: 2×2 сетка -->
@@ -65,7 +65,7 @@
     },
     setup() {
       const router = useRouter()
-      const createTripRedirecting = () => router.push('/create-trip')
+      const findTripRedirecting = () => router.push('/find-trip')
   
       // Данные для блоков
       const permkrai = [
@@ -168,7 +168,7 @@
       ]
   
       return {
-        createTripRedirecting,
+        findTripRedirecting,
         permkrai,
         sverdlovsk,
         gridItems,

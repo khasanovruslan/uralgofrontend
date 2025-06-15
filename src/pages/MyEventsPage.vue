@@ -1,3 +1,4 @@
+<!-- File: src/pages/MyEventsPage.vue -->
 <template>
   <div class="p-6">
     <h1 class="text-2xl font-bold mb-4">
@@ -11,15 +12,24 @@
       />
     </div>
 
+    <!-- Если в выбранном режиме нет событий, показываем заглушку -->
+    <div v-if="currentEvents.length === 0" class="text-center text-gray-500 py-8">
+      {{ emptyMessage }}
+    </div>
+    <!-- Иначе выводим список -->
     <EventList
-      :events="mode === 0 ? createdEvents : joinedEvents"
+      v-else
+      :events="currentEvents"
       @openChat="openChat"
     />
   </div>
+
+  <div class="h-[400px]"><!-- отступ снизу --></div>
+
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/api/axiosInstance'
 import ToggleSwitch from '@/components/buttons/ToggleSwitch.vue'
@@ -36,9 +46,21 @@ async function fetch() {
 
 onMounted(fetch)
 
-// вот это вместо $router
 const router = useRouter()
+
 function openChat(eventId) {
   router.push(`/events/${eventId}/chat`)
 }
+
+// вычисляем, какие события показывать
+const currentEvents = computed(() =>
+  mode.value === 0 ? createdEvents.value : joinedEvents.value
+)
+
+// сообщение для пустого списка
+const emptyMessage = computed(() =>
+  mode.value === 0
+    ? 'У вас ещё нет созданных событий'
+    : 'Вы пока не участвуете ни в одном событии'
+)
 </script>
