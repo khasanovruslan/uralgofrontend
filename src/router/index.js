@@ -92,6 +92,8 @@ const routes = [
     component: EventChatPage,
     meta: { requiresAuth: true, title: 'Чат события' }
   },
+   { path: '/events/:id', name: 'event-detail', component: () => import('@/pages/EventDetail.vue') },
+
   {
     path: '/trips/:id/chat',
     name: 'trip-chat',

@@ -99,6 +99,27 @@
         >
           Чат
         </button>
+        <button
+          class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded mt-2"
+          @click="$router.push({ name: 'event-detail', params: { id: evt.id } })"
+        >
+          Подробнее
+        </button>
+        <button
+            v-if="showLeaveButton(evt)"
+            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded"
+            @click="$emit('leave', evt.id)"
+          >
+            Выйти
+         </button>
+         <button
+            v-if="evt.owner?.id === authStore.user.id"
+            class="px-4 py-2 bg-red-800 hover:bg-red-900 text-white rounded"
+            @click="$emit('delete', evt.id)"
+          >
+            Удалить
+          </button>
+
       </div>
     </div>
   </div>
@@ -106,14 +127,32 @@
 
 <script setup>
 import { defineProps, defineEmits } from 'vue'
+import { useAuthStore } from '@/store/authStore'
+
+const authStore = useAuthStore()
 
 const props = defineProps({
-  events: {
-    type: Array,
-    default: () => []
-  }
+  events: Array,
+  mainMode: Number,
+  subMode: Number
 })
-const emit = defineEmits(['openChat'])
+
+const emit = defineEmits(['openChat', 'leave', 'delete'])
+
+function showLeaveButton(evt) {
+  return (
+    evt.owner?.id !== authStore.user.id && // не создатель
+    props.subMode === 1 && // только в участии
+    props.mainMode === 0 // только для актуальных
+  )
+}
+async function deleteEvent(eventId) {
+  if (confirm('Удалить событие?')) {
+    await api.delete(`/events/${eventId}`)
+    await fetch()
+  }
+}
+
 
 // Базовый URL для картинок
 const apiBase = import.meta.env.VITE_API_URL || ''
